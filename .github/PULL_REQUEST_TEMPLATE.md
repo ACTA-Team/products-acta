@@ -2,8 +2,8 @@
 
 Mark with an `x` all the checkboxes that apply (like `[x]`)
 
-> ⚠️ **Required for GrantFox:** Fill in the issue number below. This is how
-> GrantFox tracks your contribution and releases your reward.
+> ⚠️ **Required:** Fill in the issue number below. This is how
+> platforms tracks your contribution and releases your reward.
 
 Closes #<!-- issue number here, e.g: Closes #42 -->
 
