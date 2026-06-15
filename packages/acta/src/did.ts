@@ -1,4 +1,3 @@
-
 export type StellarNetwork = 'testnet' | 'mainnet';
 
 export const DID_PKH_STELLAR_PREFIX = 'did:pkh:stellar';

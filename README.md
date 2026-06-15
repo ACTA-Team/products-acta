@@ -3,8 +3,6 @@
 Monorepo hosting the products built on top of [ACTA](https://github.com/ACTA-Team) —
 trust-minimized Verifiable Credentials on Stellar/Soroban.
 
-
-
 ## What's in this repo
 
 - `apps/web` — products catalog / landing.
