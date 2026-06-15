@@ -3,9 +3,7 @@
 Monorepo hosting the products built on top of [ACTA](https://github.com/ACTA-Team) —
 trust-minimized Verifiable Credentials on Stellar/Soroban.
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full layout, conventions and how to add a
-new product, and [MIGRATION-NOTES.md](./MIGRATION-NOTES.md) for the single-app → monorepo
-migration details.
+
 
 ## What's in this repo
 
