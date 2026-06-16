@@ -1,20 +1,100 @@
 import { DID_PKH_STELLAR_PREFIX } from '@acta-products/acta/did';
-import { Button } from '@acta-products/ui';
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  Badge,
+} from '@acta-products/ui';
+import Link from 'next/link';
+import { ShieldCheck, Share2, Wallet, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-6 p-16 text-center">
-      <h1 className="text-3xl font-semibold tracking-tight">Credit History</h1>
-      <p className="max-w-md text-muted-foreground">
-        Portable credit history built on ACTA verifiable credentials. Product skeleton — nothing
-        implemented yet.
-      </p>
-      <Button variant="outline" disabled>
-        Coming soon
-      </Button>
-      <p className="text-xs text-muted-foreground">
-        Default identity method: <code>{DID_PKH_STELLAR_PREFIX}</code>
-      </p>
+    <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-16 md:py-24 flex flex-col gap-12 justify-center items-center">
+      {/* Hero Header */}
+      <div className="flex flex-col items-center text-center gap-4 max-w-2xl">
+        <Badge variant="secondary" className="px-3 py-1 text-xs gap-1.5 font-semibold text-primary">
+          <ShieldCheck className="size-3.5 text-emerald-500" />
+          ACTA Protocol
+        </Badge>
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-foreground via-muted-foreground to-foreground bg-clip-text text-transparent">
+          Credit History
+        </h1>
+        <p className="text-muted-foreground text-base md:text-lg">
+          Own, manage, and share your verifiable credit reputation. Port your financial history
+          securely without relying on centralized credit bureaus.
+        </p>
+      </div>
+
+      {/* Action Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-4">
+        {/* Share presentation card */}
+        <Card className="hover:border-primary/40 hover:bg-primary/[0.01] transition-all duration-300 flex flex-col justify-between">
+          <CardHeader>
+            <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-2">
+              <Share2 className="size-5" />
+            </div>
+            <CardTitle className="text-xl">Generate Presentation</CardTitle>
+            <CardDescription className="text-sm">
+              Select credit credentials and create a secure, verifiable link to share with lenders.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-xs text-muted-foreground">
+            Supports custom expiration dates and dynamic on-chain verification checks.
+          </CardContent>
+          <CardFooter className="border-t border-border/40 pt-4 flex justify-between items-center">
+            <Badge variant="success" className="text-[10px]">
+              Ready
+            </Badge>
+            <Button asChild size="sm" className="cursor-pointer">
+              <Link href="/share">
+                Get Started
+                <ArrowRight className="size-3.5 ml-1.5" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Vault dashboard (Coming Soon) */}
+        <Card className="opacity-75 flex flex-col justify-between border-dashed border-muted-foreground/30">
+          <CardHeader>
+            <div className="size-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground mb-2">
+              <Wallet className="size-5" />
+            </div>
+            <CardTitle className="text-xl text-muted-foreground">My Credit Vault</CardTitle>
+            <CardDescription className="text-sm">
+              View your scores, repayment history, and verify identity credentials in your personal
+              vault.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-xs text-muted-foreground">
+            Direct cryptographic vault interactions and real-time did:pkh:stellar resolver.
+          </CardContent>
+          <CardFooter className="border-t border-border/40 pt-4 flex justify-between items-center">
+            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+              Coming Soon
+            </Badge>
+            <Button disabled size="sm" variant="outline">
+              Unavailable
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+
+      {/* Footer Info */}
+      <div className="flex flex-col items-center gap-2 text-center text-xs text-muted-foreground border-t border-border/60 w-full pt-8 mt-4">
+        <p className="font-mono">
+          Identity Method:{' '}
+          <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">
+            {DID_PKH_STELLAR_PREFIX}
+          </code>
+        </p>
+        <p>Built with Next.js 16, React 19, and Tailwind CSS v4.</p>
+      </div>
     </main>
   );
 }
