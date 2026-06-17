@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
-export default async function Home() {
-  const t = await getTranslations('home');
+export default async function CredentialsPage() {
+  const t = await getTranslations('credentials');
 
   return (
     <section className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center">
