@@ -1,8 +1,14 @@
 {
+  "meta": {
+    "title": "Credit History — ACTA",
+    "description": "Portable credit history for financial inclusion, built on ACTA verifiable credentials."
+  },
   "nav": {
     "home": "Home",
     "credentials": "My credentials",
-    "share": "Share"
+    "share": "Share",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "footer": {
     "tagline": "Portable credit history built on ACTA verifiable credentials.",

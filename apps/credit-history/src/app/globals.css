@@ -57,15 +57,15 @@
 
 :root {
   /* Brand token mapping (brand-book-fixes.md) */
-  --background: oklch(0.973 0.004 74.55); /* Paper #F7F6F2 */
-  --foreground: oklch(0.148 0.013 253.1); /* Ink #11161C */
-  --card: oklch(0.973 0.004 74.55);
-  --card-foreground: oklch(0.148 0.013 253.1);
-  --popover: oklch(0.973 0.004 74.55);
-  --popover-foreground: oklch(0.148 0.013 253.1);
-  --primary: oklch(0.397 0.179 264.05); /* Trust Blue #1B4DE4 */
+  --background: oklch(0.973 0.005 95.1); /* Paper #F7F6F2 */
+  --foreground: oklch(0.198 0.014 253.2); /* Ink #11161C */
+  --card: oklch(0.973 0.005 95.1);
+  --card-foreground: oklch(0.198 0.014 253.2);
+  --popover: oklch(0.973 0.005 95.1);
+  --popover-foreground: oklch(0.198 0.014 253.2);
+  --primary: oklch(0.497 0.233 264.5); /* Trust Blue #1B4DE4 */
   --primary-foreground: oklch(0.985 0 0);
-  --border: oklch(0.91 0.007 74.55); /* Line #E6E4DD */
+  --border: oklch(0.918 0.010 93.6); /* Line #E6E4DD */
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
