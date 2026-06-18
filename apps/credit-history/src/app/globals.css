@@ -11,8 +11,12 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-display: var(--font-display);
+  --font-heading: var(--font-display);
+  --color-st-current: var(--st-current);
+  --color-st-revoked: var(--st-revoked);
+  --color-st-invalid: var(--st-invalid);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -52,14 +56,16 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  /* Brand token mapping (brand-book-fixes.md) */
+  --background: oklch(0.973 0.004 74.55); /* Paper #F7F6F2 */
+  --foreground: oklch(0.148 0.013 253.1); /* Ink #11161C */
+  --card: oklch(0.973 0.004 74.55);
+  --card-foreground: oklch(0.148 0.013 253.1);
+  --popover: oklch(0.973 0.004 74.55);
+  --popover-foreground: oklch(0.148 0.013 253.1);
+  --primary: oklch(0.397 0.179 264.05); /* Trust Blue #1B4DE4 */
   --primary-foreground: oklch(0.985 0 0);
+  --border: oklch(0.91 0.007 74.55); /* Line #E6E4DD */
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -67,7 +73,6 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.87 0 0);
@@ -84,6 +89,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* Credential state tokens */
+  --st-current: #0e9f6e;
+  --st-revoked: #dc2626;
+  --st-invalid: #d97706;
 }
 
 .dark {
@@ -125,9 +134,14 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
-  html {
-    @apply font-sans;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
   }
 }
