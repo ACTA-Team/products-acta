@@ -16,7 +16,10 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto max-w-6xl px-4 flex h-14 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-display font-semibold text-foreground">
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-display font-semibold text-foreground"
+        >
           <span className="text-primary">ACTA</span>
           <span className="hidden sm:inline text-foreground/70 font-normal text-sm">
             {tCommon('appName')}
