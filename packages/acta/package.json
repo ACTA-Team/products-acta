@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@acta-products/types": "workspace:*",
     "@acta-team/credentials": "^1.1.1"
   },
   "peerDependencies": {
