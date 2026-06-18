@@ -14,7 +14,7 @@ import { ShieldCheck, Share2, Wallet, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
-    <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-16 md:py-24 flex flex-col gap-12 justify-center items-center">
+    <section className="flex-1 w-full max-w-4xl mx-auto px-4 py-16 md:py-24 flex flex-col gap-12 justify-center items-center">
       {/* Hero Header */}
       <div className="flex flex-col items-center text-center gap-4 max-w-2xl">
         <Badge variant="secondary" className="px-3 py-1 text-xs gap-1.5 font-semibold text-primary">
@@ -95,6 +95,6 @@ export default function Home() {
         </p>
         <p>Built with Next.js 16, React 19, and Tailwind CSS v4.</p>
       </div>
-    </main>
+    </section>
   );
 }

@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "title": "Credit History — ACTA",
+    "description": "Portable credit history for financial inclusion, built on ACTA verifiable credentials."
+  },
+  "nav": {
+    "home": "Home",
+    "credentials": "My credentials",
+    "share": "Share",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "footer": {
+    "tagline": "Portable credit history built on ACTA verifiable credentials.",
+    "rights": "All rights reserved."
+  },
+  "common": {
+    "appName": "Credit History",
+    "comingSoon": "Coming soon"
+  },
+  "home": {
+    "title": "Credit History",
+    "description": "Portable credit history built on ACTA verifiable credentials. Product skeleton — nothing implemented yet."
+  },
+  "credentials": {
+    "title": "My Credentials",
+    "description": "Your verifiable credentials will appear here."
+  },
+  "share": {
+    "title": "Share",
+    "description": "Share your credentials with third parties here."
+  }
+}

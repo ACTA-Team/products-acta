@@ -153,7 +153,7 @@ export default function SharePage() {
   }
 
   return (
-    <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-12 md:py-16">
+    <section className="flex-1 w-full max-w-4xl mx-auto px-4 py-12 md:py-16">
       <div className="flex flex-col gap-8">
         {/* Header */}
         <div className="flex flex-col gap-2">
@@ -399,6 +399,6 @@ export default function SharePage() {
           </div>
         )}
       </div>
-    </main>
+    </section>
   );
 }
