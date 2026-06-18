@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 interface MobileMenuProps {
   links: { href: string; label: string }[];
@@ -9,11 +10,12 @@ interface MobileMenuProps {
 
 export function MobileMenu({ links }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations('nav');
 
   return (
     <div className="md:hidden">
       <button
-        aria-label={open ? 'Close menu' : 'Open menu'}
+        aria-label={open ? t('closeMenu') : t('openMenu')}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className="p-2 rounded-md text-foreground/70 hover:text-primary transition-colors"
