@@ -15,7 +15,7 @@ function NavLink({
       className={cn(
         'text-sm font-medium transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm px-3 py-2',
         active ? 'text-primary' : 'text-foreground/70',
-        className,
+        className
       )}
       {...props}
     />

@@ -1,4 +1,8 @@
-import { CreditCredential, CreditProfileSummary, CreditCredentialSource } from '@acta-products/types';
+import {
+  CreditCredential,
+  CreditProfileSummary,
+  CreditCredentialSource,
+} from '@acta-products/types';
 
 export const mockCreditCredentials: CreditCredential[] = [
   {
@@ -9,7 +13,8 @@ export const mockCreditCredentials: CreditCredential[] = [
     issuerDid: 'did:pkh:stellar:G-ACTARATINGAGENCY1234567890',
     issueDate: '2026-01-15T08:00:00Z',
     value: 740,
-    description: 'Verifiable credit score generated using on-chain transaction history, volume, and age on the Stellar network.',
+    description:
+      'Verifiable credit score generated using on-chain transaction history, volume, and age on the Stellar network.',
     status: 'valid',
     claims: {
       scoreType: 'Soroban Credit Score',
@@ -27,7 +32,8 @@ export const mockCreditCredentials: CreditCredential[] = [
     issuerDid: 'did:pkh:stellar:G-COMMUNITYMICROFINANCE9876',
     issueDate: '2025-11-20T10:30:00Z',
     value: '100% On-time',
-    description: 'Historical repayment rate for community micro-loans issued and settled on-chain via peer-to-peer pools.',
+    description:
+      'Historical repayment rate for community micro-loans issued and settled on-chain via peer-to-peer pools.',
     status: 'valid',
     claims: {
       totalLoansSettled: 4,
@@ -44,7 +50,8 @@ export const mockCreditCredentials: CreditCredential[] = [
     issuerDid: 'did:pkh:stellar:G-STELLARPAYROLLANCHOR5555',
     issueDate: '2026-03-01T14:15:00Z',
     value: '$45,000 USD / yr',
-    description: 'Verified proof of recurring employment salary deposits routed through a registered Stellar Anchor.',
+    description:
+      'Verified proof of recurring employment salary deposits routed through a registered Stellar Anchor.',
     status: 'valid',
     claims: {
       employerName: 'Digital Solutions Inc.',
@@ -61,7 +68,8 @@ export const mockCreditCredentials: CreditCredential[] = [
     issuerDid: 'did:pkh:stellar:G-ACTACOMPLIANCEAUTH99999',
     issueDate: '2025-09-10T11:00:00Z',
     value: 'Passed',
-    description: 'Verifiable validation of holder identity, including proof of address and government-issued ID checks.',
+    description:
+      'Verifiable validation of holder identity, including proof of address and government-issued ID checks.',
     status: 'valid',
     claims: {
       identityProvider: 'ACTA KYC API v2',
@@ -78,7 +86,8 @@ export const mockCreditCredentials: CreditCredential[] = [
     issuerDid: 'did:pkh:stellar:G-TRADITIONALFINANCIAL8888',
     issueDate: '2024-05-10T09:00:00Z',
     value: 'Delinquent',
-    description: 'Verification of a credit card account line. This credential has been revoked due to account termination.',
+    description:
+      'Verification of a credit card account line. This credential has been revoked due to account termination.',
     status: 'revoked',
     claims: {
       accountStatus: 'Charged Off',

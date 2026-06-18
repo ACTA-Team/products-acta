@@ -65,7 +65,7 @@
   --popover-foreground: oklch(0.198 0.014 253.2);
   --primary: oklch(0.497 0.233 264.5); /* Trust Blue #1B4DE4 */
   --primary-foreground: oklch(0.985 0 0);
-  --border: oklch(0.918 0.010 93.6); /* Line #E6E4DD */
+  --border: oklch(0.918 0.01 93.6); /* Line #E6E4DD */
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);

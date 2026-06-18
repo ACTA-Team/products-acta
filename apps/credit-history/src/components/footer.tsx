@@ -11,7 +11,9 @@ export async function Footer() {
           <span className="text-primary">ACTA</span> {tCommon('appName')}
         </p>
         <p className="text-center">{t('tagline')}</p>
-        <p>© {new Date().getFullYear()} {t('rights')}</p>
+        <p>
+          © {new Date().getFullYear()} {t('rights')}
+        </p>
       </div>
     </footer>
   );

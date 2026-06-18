@@ -41,4 +41,3 @@ export interface CreditCredentialSource {
   getCredential(id: string): Promise<CreditCredential | null>;
   getProfileSummary(): Promise<CreditProfileSummary>;
 }
-
