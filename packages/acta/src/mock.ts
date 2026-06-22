@@ -42,7 +42,8 @@ export const FIXTURES: CreditCredential[] = [
     issuerDid: didPkhStellar(MAINNET, 'GWORKVERIFYDAO9876543210ABCDEF9876543210ABCDEF9876543210'),
     issueDate: '2025-11-10T09:00:00Z',
     value: 'Full-Time',
-    description: 'Verified full-time employment status issued by a decentralised employer registry.',
+    description:
+      'Verified full-time employment status issued by a decentralised employer registry.',
     status: 'valid',
     claims: {
       employerName: 'Digital Solutions Inc.',
@@ -123,7 +124,8 @@ export const FIXTURES: CreditCredential[] = [
     issuerDid: didPkhStellar(MAINNET, 'GTRADFINSERVICES8888888888ABCDEF8888888888ABCDEF88888888'),
     issueDate: '2024-05-10T09:00:00Z',
     value: 'Delinquent',
-    description: 'Credit line credential revoked due to account charge-off after 180 days past due.',
+    description:
+      'Credit line credential revoked due to account charge-off after 180 days past due.',
     status: 'revoked',
     claims: {
       accountStatus: 'charged-off',
@@ -142,16 +144,15 @@ export const FIXTURES: CreditCredential[] = [
 function deriveProfileSummary(credentials: CreditCredential[]): CreditProfileSummary {
   const active = credentials.filter((c) => c.status === 'valid');
   const repaidLoans = credentials.filter(
-    (c) => c.type === 'MicrofinanceRepayment' || c.type === 'DeFiLoan',
+    (c) => c.type === 'MicrofinanceRepayment' || c.type === 'DeFiLoan'
   );
 
   // averageScore: average numeric `value` across valid credentials that carry one
   const scores = active
     .map((c) => (typeof c.value === 'number' ? c.value : null))
     .filter((v): v is number => v !== null);
-  const averageScore = scores.length > 0
-    ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-    : undefined;
+  const averageScore =
+    scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : undefined;
 
   return {
     holderDid: didPkhStellar(TESTNET, 'GHOLDERVAULT111222333444555ABCDEF111222333444555ABCDEF11'),
@@ -170,9 +171,8 @@ function deriveProfileSummary(credentials: CreditCredential[]): CreditProfileSum
 export type MockMode = 'normal' | 'empty' | 'error';
 
 export interface MockSourceOptions {
- 
   mode?: MockMode;
-  
+
   delayMs?: number;
 }
 
@@ -221,7 +221,6 @@ class MockCredentialSource implements CreditCredentialSource {
   }
 }
 
-
 // Inlined by Next.js build — declared here so TypeScript resolves the names.
 declare const NEXT_PUBLIC_MOCK_MODE: string | undefined;
 declare const NEXT_PUBLIC_DATA_SOURCE: string | undefined;
@@ -235,16 +234,14 @@ function resolveMockMode(): MockMode {
 
 export function getCredentialSource(options?: MockSourceOptions): CreditCredentialSource {
   const dataSource =
-    typeof NEXT_PUBLIC_DATA_SOURCE !== 'undefined'
-      ? (NEXT_PUBLIC_DATA_SOURCE as string)
-      : 'mock';
+    typeof NEXT_PUBLIC_DATA_SOURCE !== 'undefined' ? (NEXT_PUBLIC_DATA_SOURCE as string) : 'mock';
 
   if (dataSource !== 'mock') {
     // SEAM: replace this block with ActaCredentialSource when ready.
     // Unrecognised values fall back to mock with a console warning.
     console.warn(
       `[getCredentialSource] Unrecognised NEXT_PUBLIC_DATA_SOURCE="${dataSource}". ` +
-        'Falling back to mock. Set to "real" when ActaCredentialSource is available.',
+        'Falling back to mock. Set to "real" when ActaCredentialSource is available.'
     );
   }
 

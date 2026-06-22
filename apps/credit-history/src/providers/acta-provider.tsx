@@ -28,9 +28,10 @@ export function ActaProvider({ children }: ActaProviderProps) {
   const network = resolveNetwork();
   const baseURL = resolveBaseURL(network);
   const apiKey =
-    typeof NEXT_PUBLIC_ACTA_API_KEY !== 'undefined'
+    (typeof NEXT_PUBLIC_ACTA_API_KEY !== 'undefined' &&
+    (NEXT_PUBLIC_ACTA_API_KEY as string).length > 0)
       ? (NEXT_PUBLIC_ACTA_API_KEY as string)
-      : undefined;
+      : 'placeholder-batch1-no-api-calls';
 
   return (
     <ActaConfig baseURL={baseURL} apiKey={apiKey}>

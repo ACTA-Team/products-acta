@@ -17,13 +17,7 @@
  *   DID is always derived with didPkhStellar — never constructed by hand.
  */
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { didPkhStellar } from '@acta-products/acta/did';
 import type { StellarNetwork } from '@acta-products/acta/did';
 import { getWalletConnector } from './wallet-connector';
@@ -113,13 +107,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const did =
-    address !== null ? didPkhStellar(network, address) : null;
+  const did = address !== null ? didPkhStellar(network, address) : null;
 
   return (
-    <SessionContext.Provider
-      value={{ status, address, did, connect, disconnect }}
-    >
+    <SessionContext.Provider value={{ status, address, did, connect, disconnect }}>
       {children}
     </SessionContext.Provider>
   );
