@@ -29,5 +29,14 @@
   "share": {
     "title": "Share",
     "description": "Share your credentials with third parties here."
+  },
+  "session": {
+    "connect": "Connect wallet",
+    "connecting": "Connecting…",
+    "disconnect": "Disconnect",
+    "connectedAs": "Connected as",
+    "notConnected": "No wallet connected",
+    "connectCta": "Connect your Stellar wallet to access your credentials.",
+    "connectButton": "Connect wallet"
   }
 }

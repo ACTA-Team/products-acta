@@ -4,30 +4,39 @@
     "description": "Portable credit history for financial inclusion, built on ACTA verifiable credentials."
   },
   "nav": {
-    "home": "Home",
-    "credentials": "My credentials",
-    "share": "Share",
-    "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "home": "Inicio",
+    "credentials": "Mis credenciales",
+    "share": "Compartir",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
   },
   "footer": {
-    "tagline": "Portable credit history built on ACTA verifiable credentials.",
-    "rights": "All rights reserved."
+    "tagline": "Historial crediticio portable sobre credenciales verificables de ACTA.",
+    "rights": "Todos los derechos reservados."
   },
   "common": {
     "appName": "Credit History",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Próximamente"
   },
   "home": {
     "title": "Credit History",
-    "description": "Portable credit history built on ACTA verifiable credentials. Product skeleton — nothing implemented yet."
+    "description": "Historial crediticio portable sobre credenciales verificables de ACTA."
   },
   "credentials": {
-    "title": "My Credentials",
-    "description": "Your verifiable credentials will appear here."
+    "title": "Mis Credenciales",
+    "description": "Tus credenciales verificables aparecerán aquí."
   },
   "share": {
-    "title": "Share",
-    "description": "Share your credentials with third parties here."
+    "title": "Compartir",
+    "description": "Comparte tus credenciales con terceros aquí."
+  },
+  "session": {
+    "connect": "Conectar billetera",
+    "connecting": "Conectando…",
+    "disconnect": "Desconectar",
+    "connectedAs": "Conectado como",
+    "notConnected": "Sin billetera conectada",
+    "connectCta": "Conecta tu billetera Stellar para acceder a tus credenciales.",
+    "connectButton": "Conectar billetera"
   }
 }

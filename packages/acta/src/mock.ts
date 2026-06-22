@@ -1,38 +1,12 @@
 import { didPkhStellar, StellarNetwork } from './did';
+import type {
+  CreditCredential,
+  CreditProfileSummary,
+  CreditCredentialSource,
+} from '@acta-products/types';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Domain types (re-exported from @acta-products/types — #6)
-// ─────────────────────────────────────────────────────────────────────────────
-
-export type CreditStatus = 'valid' | 'revoked' | 'invalid';
-
-export type CreditCategory = 'INCOME' | 'EMPLOYMENT' | 'REPAYMENT_HISTORY' | 'LOAN' | 'UTILITY';
-
-export interface CreditCredential {
-  id: string;
-  category: CreditCategory;
-  title: string;
-  issuer: string;
-  issuerDid: string;
-  issuedAt: string; // ISO 8601
-  revokedAt?: string; // ISO 8601 — present only when status === 'revoked'
-  status: CreditStatus;
-  claims: Record<string, unknown>;
-}
-
-export interface CreditProfileSummary {
-  totalCredentials: number;
-  byCategory: Record<CreditCategory, number>;
-  byStatus: Record<CreditStatus, number>;
-  /** ISO 8601 date of the oldest credential */
-  oldestCredentialAt: string;
-}
-
-export interface CreditCredentialSource {
-  listCredentials(): Promise<CreditCredential[]>;
-  getCredential(id: string): Promise<CreditCredential | null>;
-  getProfileSummary(): Promise<CreditProfileSummary>;
-}
+// Re-export the interface so consumers can import it from this package too
+export type { CreditCredential, CreditProfileSummary, CreditCredentialSource };
 
 const TESTNET: StellarNetwork = 'testnet';
 const MAINNET: StellarNetwork = 'mainnet';
@@ -41,11 +15,13 @@ export const FIXTURES: CreditCredential[] = [
   // ── INCOME ──────────────────────────────────────────────────────────────
   {
     id: 'cred-income-anchor-payroll',
-    category: 'INCOME',
+    type: 'IncomeVerification',
     title: 'Anchor Payroll Income',
     issuer: 'Stellar Anchor Payroll Services',
     issuerDid: didPkhStellar(MAINNET, 'GAPAYROLL5ANCHORSVC1234567890ABCDEF1234567890ABCDEF12345'),
-    issuedAt: '2026-03-01T14:15:00Z',
+    issueDate: '2026-03-01T14:15:00Z',
+    value: '$45,000 USD / yr',
+    description: 'Verified recurring salary deposits routed through a registered Stellar Anchor.',
     status: 'valid',
     claims: {
       employerName: 'Digital Solutions Inc.',
@@ -60,11 +36,13 @@ export const FIXTURES: CreditCredential[] = [
   // ── EMPLOYMENT ──────────────────────────────────────────────────────────
   {
     id: 'cred-employment-verified',
-    category: 'EMPLOYMENT',
+    type: 'EmploymentVerification',
     title: 'Full-Time Employment Verification',
     issuer: 'WorkVerify DAO',
     issuerDid: didPkhStellar(MAINNET, 'GWORKVERIFYDAO9876543210ABCDEF9876543210ABCDEF9876543210'),
-    issuedAt: '2025-11-10T09:00:00Z',
+    issueDate: '2025-11-10T09:00:00Z',
+    value: 'Full-Time',
+    description: 'Verified full-time employment status issued by a decentralised employer registry.',
     status: 'valid',
     claims: {
       employerName: 'Digital Solutions Inc.',
@@ -78,11 +56,13 @@ export const FIXTURES: CreditCredential[] = [
   // ── REPAYMENT_HISTORY ───────────────────────────────────────────────────
   {
     id: 'cred-repayment-microfinance',
-    category: 'REPAYMENT_HISTORY',
+    type: 'MicrofinanceRepayment',
     title: 'Microfinance Repayment Record',
     issuer: 'Community Microfinance Network',
     issuerDid: didPkhStellar(TESTNET, 'GCMFNEWORK1234567890ABCDEF1234567890ABCDEF1234567890ABCD'),
-    issuedAt: '2025-08-20T10:30:00Z',
+    issueDate: '2025-08-20T10:30:00Z',
+    value: '100% On-time',
+    description: 'Historical repayment record for community micro-loans settled on-chain.',
     status: 'valid',
     claims: {
       totalLoansSettled: 4,
@@ -96,11 +76,13 @@ export const FIXTURES: CreditCredential[] = [
   // ── LOAN ────────────────────────────────────────────────────────────────
   {
     id: 'cred-loan-soroban-pool',
-    category: 'LOAN',
+    type: 'DeFiLoan',
     title: 'Soroban DeFi Loan',
     issuer: 'Soroban Lending Pool v2',
     issuerDid: didPkhStellar(MAINNET, 'GSOROBANLEND2222222222ABCDEF2222222222ABCDEF2222222222AB'),
-    issuedAt: '2024-12-05T08:00:00Z',
+    issueDate: '2024-12-05T08:00:00Z',
+    value: '$5,000 USD',
+    description: 'Active DeFi loan issued via a Soroban smart contract lending pool.',
     status: 'valid',
     claims: {
       principalUSD: 5000,
@@ -115,11 +97,13 @@ export const FIXTURES: CreditCredential[] = [
   // ── UTILITY ─────────────────────────────────────────────────────────────
   {
     id: 'cred-utility-electric',
-    category: 'UTILITY',
+    type: 'UtilityPayment',
     title: 'Electric Bill Payment History',
     issuer: 'GreenGrid Utility Verifier',
     issuerDid: didPkhStellar(MAINNET, 'GGREENGRIDUTILITY3333333333ABCDEF3333333333ABCDEF333333'),
-    issuedAt: '2026-01-15T08:00:00Z',
+    issueDate: '2026-01-15T08:00:00Z',
+    value: '18 months on-time',
+    description: 'Consecutive on-time utility payments verified by a registered billing authority.',
     status: 'valid',
     claims: {
       utilityType: 'electricity',
@@ -130,96 +114,71 @@ export const FIXTURES: CreditCredential[] = [
     },
   },
 
-  // ── REVOKED (with revokedAt) ─────────────────────────────────────────────
+  // ── REVOKED ─────────────────────────────────────────────────────────────
   {
     id: 'cred-loan-legacy-revoked',
-    category: 'LOAN',
+    type: 'LegacyCreditLine',
     title: 'Traditional Credit Line (Revoked)',
     issuer: 'Traditional Financial Services',
     issuerDid: didPkhStellar(MAINNET, 'GTRADFINSERVICES8888888888ABCDEF8888888888ABCDEF88888888'),
-    issuedAt: '2024-05-10T09:00:00Z',
-    revokedAt: '2025-02-14T17:00:00Z',
+    issueDate: '2024-05-10T09:00:00Z',
+    value: 'Delinquent',
+    description: 'Credit line credential revoked due to account charge-off after 180 days past due.',
     status: 'revoked',
     claims: {
       accountStatus: 'charged-off',
       outstandingBalanceUSD: 1420,
       daysPastDue: 180,
       creditLimit: 3000,
-    },
-  },
-
-  // ── INVALID ──────────────────────────────────────────────────────────────
-  // Represents a VC that was found in the vault but could not be verified
-  // (getVc returned null, or verifyVc threw / returned an unexpected value).
-  // The 'invalid' state is produced by THIS layer, not the SDK contract.
-  {
-    id: 'cred-income-unverifiable',
-    category: 'INCOME',
-    title: 'Income Claim (Unverifiable)',
-    issuer: 'Unknown Issuer',
-    issuerDid: didPkhStellar(TESTNET, 'GUNKNOWNISSUER0000000000ABCDEF0000000000ABCDEF0000000000'),
-    issuedAt: '2023-07-01T00:00:00Z',
-    status: 'invalid',
-    claims: {
-      reason: 'VC mapping failed — raw credential did not conform to CreditCredential schema',
+      revokedAt: '2025-02-14T17:00:00Z',
     },
   },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Helper: derive CreditProfileSummary from a fixture list  (not hardcoded)
+// Helper: derive CreditProfileSummary from the fixture list (not hardcoded)
 // ─────────────────────────────────────────────────────────────────────────────
 
 function deriveProfileSummary(credentials: CreditCredential[]): CreditProfileSummary {
-  const allCategories: CreditCategory[] = [
-    'INCOME',
-    'EMPLOYMENT',
-    'REPAYMENT_HISTORY',
-    'LOAN',
-    'UTILITY',
-  ];
-  const allStatuses: CreditStatus[] = ['valid', 'revoked', 'invalid'];
+  const active = credentials.filter((c) => c.status === 'valid');
+  const repaidLoans = credentials.filter(
+    (c) => c.type === 'MicrofinanceRepayment' || c.type === 'DeFiLoan',
+  );
 
-  const byCategory = Object.fromEntries(
-    allCategories.map((cat) => [cat, credentials.filter((c) => c.category === cat).length])
-  ) as Record<CreditCategory, number>;
-
-  const byStatus = Object.fromEntries(
-    allStatuses.map((s) => [s, credentials.filter((c) => c.status === s).length])
-  ) as Record<CreditStatus, number>;
-
-  // Age = oldest issuedAt date across the full list
-  const oldestCredentialAt = credentials.reduce((oldest, c) => {
-    return c.issuedAt < oldest ? c.issuedAt : oldest;
-  }, credentials[0]?.issuedAt ?? new Date().toISOString());
+  // averageScore: average numeric `value` across valid credentials that carry one
+  const scores = active
+    .map((c) => (typeof c.value === 'number' ? c.value : null))
+    .filter((v): v is number => v !== null);
+  const averageScore = scores.length > 0
+    ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+    : undefined;
 
   return {
-    totalCredentials: credentials.length,
-    byCategory,
-    byStatus,
-    oldestCredentialAt,
+    holderDid: didPkhStellar(TESTNET, 'GHOLDERVAULT111222333444555ABCDEF111222333444555ABCDEF11'),
+    holderName: 'Alex Mercer',
+    averageScore,
+    activeCredentialsCount: active.length,
+    totalLoansRepaid: repaidLoans.length,
+    riskCategory: active.length >= 4 ? 'Low' : active.length >= 2 ? 'Medium' : 'High',
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MockCredentialSource  (Step 2)
+// Mock mode types
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type MockMode = 'normal' | 'empty' | 'error';
 
 export interface MockSourceOptions {
-  /**
-   * 'normal' → returns full fixture set  (default)
-   * 'empty'  → listCredentials returns [],  getProfileSummary returns zero-counts
-   * 'error'  → every method rejects with a controlled Error
-   */
+ 
   mode?: MockMode;
-  /**
-   * Simulated network latency in ms.  Default: 120.
-   * Set to 0 in unit tests to keep them fast.
-   */
+  
   delayMs?: number;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MockCredentialSource  (Step 2)
+// ─────────────────────────────────────────────────────────────────────────────
 
 class MockCredentialSource implements CreditCredentialSource {
   private readonly mode: MockMode;
@@ -236,68 +195,56 @@ class MockCredentialSource implements CreditCredentialSource {
 
   async listCredentials(): Promise<CreditCredential[]> {
     await this.delay();
-
     if (this.mode === 'error') {
       throw new Error('[MockCredentialSource] Simulated network error in listCredentials()');
     }
-    if (this.mode === 'empty') {
-      return [];
-    }
-
+    if (this.mode === 'empty') return [];
     return [...FIXTURES];
   }
 
   async getCredential(id: string): Promise<CreditCredential | null> {
     await this.delay();
-
     if (this.mode === 'error') {
       throw new Error(`[MockCredentialSource] Simulated network error in getCredential(${id})`);
     }
-    if (this.mode === 'empty') {
-      return null;
-    }
-
+    if (this.mode === 'empty') return null;
     return FIXTURES.find((c) => c.id === id) ?? null;
   }
 
   async getProfileSummary(): Promise<CreditProfileSummary> {
     await this.delay();
-
     if (this.mode === 'error') {
       throw new Error('[MockCredentialSource] Simulated network error in getProfileSummary()');
     }
-    if (this.mode === 'empty') {
-      return deriveProfileSummary([]);
-    }
-
+    if (this.mode === 'empty') return deriveProfileSummary([]);
     return deriveProfileSummary(FIXTURES);
   }
 }
 
+
+// Inlined by Next.js build — declared here so TypeScript resolves the names.
+declare const NEXT_PUBLIC_MOCK_MODE: string | undefined;
+declare const NEXT_PUBLIC_DATA_SOURCE: string | undefined;
+
 function resolveMockMode(): MockMode {
-  // Next.js inlines NEXT_PUBLIC_* at build time; no Node process type needed.
-  const envMode = (
-    typeof NEXT_PUBLIC_MOCK_MODE !== 'undefined' ? NEXT_PUBLIC_MOCK_MODE : ''
-  ) as string;
+  const envMode =
+    typeof NEXT_PUBLIC_MOCK_MODE !== 'undefined' ? (NEXT_PUBLIC_MOCK_MODE as string) : '';
   if (envMode === 'empty' || envMode === 'error') return envMode as MockMode;
   return 'normal';
 }
 
-// Inlined by Next.js build — declared here so TypeScript resolves the name.
-declare const NEXT_PUBLIC_MOCK_MODE: string | undefined;
-declare const NEXT_PUBLIC_DATA_SOURCE: string | undefined;
-
 export function getCredentialSource(options?: MockSourceOptions): CreditCredentialSource {
-  const dataSource = (
-    typeof NEXT_PUBLIC_DATA_SOURCE !== 'undefined' ? NEXT_PUBLIC_DATA_SOURCE : 'mock'
-  ) as string;
+  const dataSource =
+    typeof NEXT_PUBLIC_DATA_SOURCE !== 'undefined'
+      ? (NEXT_PUBLIC_DATA_SOURCE as string)
+      : 'mock';
 
   if (dataSource !== 'mock') {
     // SEAM: replace this block with ActaCredentialSource when ready.
-    // For now, unrecognised values fall back to mock with a console warning.
+    // Unrecognised values fall back to mock with a console warning.
     console.warn(
       `[getCredentialSource] Unrecognised NEXT_PUBLIC_DATA_SOURCE="${dataSource}". ` +
-        'Falling back to mock. Set to "real" when ActaCredentialSource is available.'
+        'Falling back to mock. Set to "real" when ActaCredentialSource is available.',
     );
   }
 
