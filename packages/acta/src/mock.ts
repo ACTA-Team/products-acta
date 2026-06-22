@@ -6,12 +6,7 @@ import { didPkhStellar, StellarNetwork } from './did';
 
 export type CreditStatus = 'valid' | 'revoked' | 'invalid';
 
-export type CreditCategory =
-  | 'INCOME'
-  | 'EMPLOYMENT'
-  | 'REPAYMENT_HISTORY'
-  | 'LOAN'
-  | 'UTILITY';
+export type CreditCategory = 'INCOME' | 'EMPLOYMENT' | 'REPAYMENT_HISTORY' | 'LOAN' | 'UTILITY';
 
 export interface CreditCredential {
   id: string;
@@ -19,8 +14,8 @@ export interface CreditCredential {
   title: string;
   issuer: string;
   issuerDid: string;
-  issuedAt: string;          // ISO 8601
-  revokedAt?: string;        // ISO 8601 — present only when status === 'revoked'
+  issuedAt: string; // ISO 8601
+  revokedAt?: string; // ISO 8601 — present only when status === 'revoked'
   status: CreditStatus;
   claims: Record<string, unknown>;
 }
@@ -186,17 +181,11 @@ function deriveProfileSummary(credentials: CreditCredential[]): CreditProfileSum
   const allStatuses: CreditStatus[] = ['valid', 'revoked', 'invalid'];
 
   const byCategory = Object.fromEntries(
-    allCategories.map((cat) => [
-      cat,
-      credentials.filter((c) => c.category === cat).length,
-    ]),
+    allCategories.map((cat) => [cat, credentials.filter((c) => c.category === cat).length])
   ) as Record<CreditCategory, number>;
 
   const byStatus = Object.fromEntries(
-    allStatuses.map((s) => [
-      s,
-      credentials.filter((c) => c.status === s).length,
-    ]),
+    allStatuses.map((s) => [s, credentials.filter((c) => c.status === s).length])
   ) as Record<CreditStatus, number>;
 
   // Age = oldest issuedAt date across the full list
@@ -287,9 +276,9 @@ class MockCredentialSource implements CreditCredentialSource {
 
 function resolveMockMode(): MockMode {
   // Next.js inlines NEXT_PUBLIC_* at build time; no Node process type needed.
-  const envMode = (typeof NEXT_PUBLIC_MOCK_MODE !== 'undefined'
-    ? NEXT_PUBLIC_MOCK_MODE
-    : '') as string;
+  const envMode = (
+    typeof NEXT_PUBLIC_MOCK_MODE !== 'undefined' ? NEXT_PUBLIC_MOCK_MODE : ''
+  ) as string;
   if (envMode === 'empty' || envMode === 'error') return envMode as MockMode;
   return 'normal';
 }
@@ -299,16 +288,16 @@ declare const NEXT_PUBLIC_MOCK_MODE: string | undefined;
 declare const NEXT_PUBLIC_DATA_SOURCE: string | undefined;
 
 export function getCredentialSource(options?: MockSourceOptions): CreditCredentialSource {
-  const dataSource = (typeof NEXT_PUBLIC_DATA_SOURCE !== 'undefined'
-    ? NEXT_PUBLIC_DATA_SOURCE
-    : 'mock') as string;
+  const dataSource = (
+    typeof NEXT_PUBLIC_DATA_SOURCE !== 'undefined' ? NEXT_PUBLIC_DATA_SOURCE : 'mock'
+  ) as string;
 
   if (dataSource !== 'mock') {
     // SEAM: replace this block with ActaCredentialSource when ready.
     // For now, unrecognised values fall back to mock with a console warning.
     console.warn(
       `[getCredentialSource] Unrecognised NEXT_PUBLIC_DATA_SOURCE="${dataSource}". ` +
-        'Falling back to mock. Set to "real" when ActaCredentialSource is available.',
+        'Falling back to mock. Set to "real" when ActaCredentialSource is available.'
     );
   }
 
