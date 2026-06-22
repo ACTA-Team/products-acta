@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { getMockCreditCredentialSource } from '@acta-products/acta';
+import { getCredentialSource } from '@acta-products/acta';
 import { CreditCredential, CreditProfileSummary } from '@acta-products/acta/types';
 import {
   Card,
@@ -49,7 +49,7 @@ export default function SharePage() {
   React.useEffect(() => {
     const loadData = async () => {
       try {
-        const source = getMockCreditCredentialSource();
+        const source = getCredentialSource();
         const [creds, prof] = await Promise.all([
           source.listCredentials(),
           source.getProfileSummary(),
