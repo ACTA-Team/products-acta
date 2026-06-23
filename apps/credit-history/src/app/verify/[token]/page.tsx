@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useParams } from 'next/navigation';
-import { getMockCreditCredentialSource } from '@acta-products/acta';
+import { getCredentialSource } from '@acta-products/acta';
 import { CreditCredential, CreditProfileSummary } from '@acta-products/acta/types';
 import {
   Card,
@@ -86,7 +86,7 @@ export default function VerifyPage() {
         }
 
         // 3. Retrieve credentials from mock source
-        const source = getMockCreditCredentialSource();
+        const source = getCredentialSource();
         const [allCreds, prof] = await Promise.all([
           source.listCredentials(),
           source.getProfileSummary(),

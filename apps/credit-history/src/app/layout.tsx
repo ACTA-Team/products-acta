@@ -4,6 +4,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { ActaProvider } from '@/providers/acta-provider';
+import { SessionProvider } from '@/session/session-provider';
 import './globals.css';
 
 const fontDisplay = Space_Grotesk({
@@ -46,9 +48,21 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
-          <Header />
-          <main className="flex flex-1 flex-col">{children}</main>
-          <Footer />
+          {/*
+           * ActaProvider: mounts ActaConfig as low as possible — inside
+           * NextIntlClientProvider but outside the page content, so only
+           * components that need the ACTA client context are affected.
+           *
+           * SessionProvider: wraps the shell so the header's WalletButton
+           * and any page-level session gating can both access useSession().
+           */}
+          <ActaProvider>
+            <SessionProvider>
+              <Header />
+              <main className="flex flex-1 flex-col">{children}</main>
+              <Footer />
+            </SessionProvider>
+          </ActaProvider>
         </NextIntlClientProvider>
       </body>
     </html>

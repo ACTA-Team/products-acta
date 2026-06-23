@@ -1,137 +1,252 @@
-import {
+import { didPkhStellar, StellarNetwork } from './did';
+import type {
   CreditCredential,
   CreditProfileSummary,
   CreditCredentialSource,
 } from '@acta-products/types';
 
-export const mockCreditCredentials: CreditCredential[] = [
+// Re-export the interface so consumers can import it from this package too
+export type { CreditCredential, CreditProfileSummary, CreditCredentialSource };
+
+const TESTNET: StellarNetwork = 'testnet';
+const MAINNET: StellarNetwork = 'mainnet';
+
+export const FIXTURES: CreditCredential[] = [
+  // ── INCOME ──────────────────────────────────────────────────────────────
   {
-    id: 'cred-stellar-score',
-    type: 'StellarCreditScore',
-    title: 'Stellar Credit Score',
-    issuer: 'ACTA Rating Agency',
-    issuerDid: 'did:pkh:stellar:G-ACTARATINGAGENCY1234567890',
-    issueDate: '2026-01-15T08:00:00Z',
-    value: 740,
-    description:
-      'Verifiable credit score generated using on-chain transaction history, volume, and age on the Stellar network.',
+    id: 'cred-income-anchor-payroll',
+    type: 'IncomeVerification',
+    title: 'Anchor Payroll Income',
+    issuer: 'Stellar Anchor Payroll Services',
+    issuerDid: didPkhStellar(MAINNET, 'GAPAYROLL5ANCHORSVC1234567890ABCDEF1234567890ABCDEF12345'),
+    issueDate: '2026-03-01T14:15:00Z',
+    value: '$45,000 USD / yr',
+    description: 'Verified recurring salary deposits routed through a registered Stellar Anchor.',
     status: 'valid',
     claims: {
-      scoreType: 'Soroban Credit Score',
-      scoreRange: '300-850',
-      activeMonths: 24,
-      onChainBalanceUSD: 1250,
-      monthlyVolumeUSD: 3100,
+      employerName: 'Digital Solutions Inc.',
+      annualSalaryUSD: 45000,
+      depositFrequency: 'bi-weekly',
+      averageMonthlySalaryUSD: 3750,
+      verificationPeriodMonths: 12,
+      anchorAsset: 'USDC',
     },
   },
+
+  // ── EMPLOYMENT ──────────────────────────────────────────────────────────
   {
-    id: 'cred-microfinance-repay',
-    type: 'MicrofinanceRepayment',
-    title: 'Microfinance Repayment History',
-    issuer: 'Community Microfinance Network',
-    issuerDid: 'did:pkh:stellar:G-COMMUNITYMICROFINANCE9876',
-    issueDate: '2025-11-20T10:30:00Z',
-    value: '100% On-time',
+    id: 'cred-employment-verified',
+    type: 'EmploymentVerification',
+    title: 'Full-Time Employment Verification',
+    issuer: 'WorkVerify DAO',
+    issuerDid: didPkhStellar(MAINNET, 'GWORKVERIFYDAO9876543210ABCDEF9876543210ABCDEF9876543210'),
+    issueDate: '2025-11-10T09:00:00Z',
+    value: 'Full-Time',
     description:
-      'Historical repayment rate for community micro-loans issued and settled on-chain via peer-to-peer pools.',
+      'Verified full-time employment status issued by a decentralised employer registry.',
+    status: 'valid',
+    claims: {
+      employerName: 'Digital Solutions Inc.',
+      jobTitle: 'Senior Backend Engineer',
+      startDate: '2023-06-01',
+      employmentType: 'full-time',
+      contractDurationMonths: null,
+    },
+  },
+
+  // ── REPAYMENT_HISTORY ───────────────────────────────────────────────────
+  {
+    id: 'cred-repayment-microfinance',
+    type: 'MicrofinanceRepayment',
+    title: 'Microfinance Repayment Record',
+    issuer: 'Community Microfinance Network',
+    issuerDid: didPkhStellar(TESTNET, 'GCMFNEWORK1234567890ABCDEF1234567890ABCDEF1234567890ABCD'),
+    issueDate: '2025-08-20T10:30:00Z',
+    value: '100% On-time',
+    description: 'Historical repayment record for community micro-loans settled on-chain.',
     status: 'valid',
     claims: {
       totalLoansSettled: 4,
       missedPayments: 0,
+      onTimePaymentRate: '100%',
       totalRepaidAmountUSD: 2400,
       longestLoanTermMonths: 6,
     },
   },
+
+  // ── LOAN ────────────────────────────────────────────────────────────────
   {
-    id: 'cred-income-verify',
-    type: 'IncomeVerification',
-    title: 'Income & Employment Verification',
-    issuer: 'Stellar Anchor Payroll Services',
-    issuerDid: 'did:pkh:stellar:G-STELLARPAYROLLANCHOR5555',
-    issueDate: '2026-03-01T14:15:00Z',
-    value: '$45,000 USD / yr',
-    description:
-      'Verified proof of recurring employment salary deposits routed through a registered Stellar Anchor.',
+    id: 'cred-loan-soroban-pool',
+    type: 'DeFiLoan',
+    title: 'Soroban DeFi Loan',
+    issuer: 'Soroban Lending Pool v2',
+    issuerDid: didPkhStellar(MAINNET, 'GSOROBANLEND2222222222ABCDEF2222222222ABCDEF2222222222AB'),
+    issueDate: '2024-12-05T08:00:00Z',
+    value: '$5,000 USD',
+    description: 'Active DeFi loan issued via a Soroban smart contract lending pool.',
     status: 'valid',
     claims: {
-      employerName: 'Digital Solutions Inc.',
-      depositFrequency: 'Bi-weekly',
-      averageMonthlySalaryUSD: 3750,
-      verificationPeriodMonths: 12,
+      principalUSD: 5000,
+      termMonths: 12,
+      interestRateAPR: '8.5%',
+      collateralAsset: 'XLM',
+      collateralRatio: 1.5,
+      currentLtv: '62%',
     },
   },
+
+  // ── UTILITY ─────────────────────────────────────────────────────────────
   {
-    id: 'cred-identity-kyc',
-    type: 'IdentityKYC',
-    title: 'Identity Verification (KYC)',
-    issuer: 'ACTA Compliance Authority',
-    issuerDid: 'did:pkh:stellar:G-ACTACOMPLIANCEAUTH99999',
-    issueDate: '2025-09-10T11:00:00Z',
-    value: 'Passed',
-    description:
-      'Verifiable validation of holder identity, including proof of address and government-issued ID checks.',
+    id: 'cred-utility-electric',
+    type: 'UtilityPayment',
+    title: 'Electric Bill Payment History',
+    issuer: 'GreenGrid Utility Verifier',
+    issuerDid: didPkhStellar(MAINNET, 'GGREENGRIDUTILITY3333333333ABCDEF3333333333ABCDEF333333'),
+    issueDate: '2026-01-15T08:00:00Z',
+    value: '18 months on-time',
+    description: 'Consecutive on-time utility payments verified by a registered billing authority.',
     status: 'valid',
     claims: {
-      identityProvider: 'ACTA KYC API v2',
-      verificationLevel: 'Level 2 (Full KYC)',
-      documentType: 'Passport',
-      jurisdiction: 'Global / US-compliant',
+      utilityType: 'electricity',
+      provider: 'National Electric S.A.',
+      accountId: 'NE-7891234',
+      consecutiveOnTimePayments: 18,
+      averageMonthlyUSD: 42,
     },
   },
+
+  // ── REVOKED ─────────────────────────────────────────────────────────────
   {
-    id: 'cred-legacy-revoked',
+    id: 'cred-loan-legacy-revoked',
     type: 'LegacyCreditLine',
-    title: 'Traditional Credit Line (Legacy)',
+    title: 'Traditional Credit Line (Revoked)',
     issuer: 'Traditional Financial Services',
-    issuerDid: 'did:pkh:stellar:G-TRADITIONALFINANCIAL8888',
+    issuerDid: didPkhStellar(MAINNET, 'GTRADFINSERVICES8888888888ABCDEF8888888888ABCDEF88888888'),
     issueDate: '2024-05-10T09:00:00Z',
     value: 'Delinquent',
     description:
-      'Verification of a credit card account line. This credential has been revoked due to account termination.',
+      'Credit line credential revoked due to account charge-off after 180 days past due.',
     status: 'revoked',
     claims: {
-      accountStatus: 'Charged Off',
+      accountStatus: 'charged-off',
       outstandingBalanceUSD: 1420,
       daysPastDue: 180,
+      creditLimit: 3000,
+      revokedAt: '2025-02-14T17:00:00Z',
     },
   },
 ];
 
-export const mockProfileSummary: CreditProfileSummary = {
-  holderDid: 'did:pkh:stellar:G-HOLDERVAULT111222333444',
-  holderName: 'Alex Mercer',
-  averageScore: 740,
-  activeCredentialsCount: 4,
-  totalLoansRepaid: 4,
-  riskCategory: 'Low',
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: derive CreditProfileSummary from the fixture list (not hardcoded)
+// ─────────────────────────────────────────────────────────────────────────────
 
-class MockCreditCredentialSource implements CreditCredentialSource {
+function deriveProfileSummary(credentials: CreditCredential[]): CreditProfileSummary {
+  const active = credentials.filter((c) => c.status === 'valid');
+  const repaidLoans = credentials.filter(
+    (c) => c.type === 'MicrofinanceRepayment' || c.type === 'DeFiLoan'
+  );
+
+  // averageScore: average numeric `value` across valid credentials that carry one
+  const scores = active
+    .map((c) => (typeof c.value === 'number' ? c.value : null))
+    .filter((v): v is number => v !== null);
+  const averageScore =
+    scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : undefined;
+
+  return {
+    holderDid: didPkhStellar(TESTNET, 'GHOLDERVAULT111222333444555ABCDEF111222333444555ABCDEF11'),
+    holderName: 'Alex Mercer',
+    averageScore,
+    activeCredentialsCount: active.length,
+    totalLoansRepaid: repaidLoans.length,
+    riskCategory: active.length >= 4 ? 'Low' : active.length >= 2 ? 'Medium' : 'High',
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mock mode types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type MockMode = 'normal' | 'empty' | 'error';
+
+export interface MockSourceOptions {
+  mode?: MockMode;
+
+  delayMs?: number;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MockCredentialSource  (Step 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class MockCredentialSource implements CreditCredentialSource {
+  private readonly mode: MockMode;
+  private readonly delayMs: number;
+
+  constructor({ mode = 'normal', delayMs = 120 }: MockSourceOptions = {}) {
+    this.mode = mode;
+    this.delayMs = delayMs;
+  }
+
+  private delay(): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, this.delayMs));
+  }
+
   async listCredentials(): Promise<CreditCredential[]> {
-    // Simulate slight API delay for fidelity
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(mockCreditCredentials), 100);
-    });
+    await this.delay();
+    if (this.mode === 'error') {
+      throw new Error('[MockCredentialSource] Simulated network error in listCredentials()');
+    }
+    if (this.mode === 'empty') return [];
+    return [...FIXTURES];
   }
 
   async getCredential(id: string): Promise<CreditCredential | null> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const cred = mockCreditCredentials.find((c) => c.id === id);
-        resolve(cred || null);
-      }, 50);
-    });
+    await this.delay();
+    if (this.mode === 'error') {
+      throw new Error(`[MockCredentialSource] Simulated network error in getCredential(${id})`);
+    }
+    if (this.mode === 'empty') return null;
+    return FIXTURES.find((c) => c.id === id) ?? null;
   }
 
   async getProfileSummary(): Promise<CreditProfileSummary> {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(mockProfileSummary), 100);
-    });
+    await this.delay();
+    if (this.mode === 'error') {
+      throw new Error('[MockCredentialSource] Simulated network error in getProfileSummary()');
+    }
+    if (this.mode === 'empty') return deriveProfileSummary([]);
+    return deriveProfileSummary(FIXTURES);
   }
 }
 
-const mockSource = new MockCreditCredentialSource();
+// Inlined by Next.js build — declared here so TypeScript resolves the names.
+declare const NEXT_PUBLIC_MOCK_MODE: string | undefined;
+declare const NEXT_PUBLIC_DATA_SOURCE: string | undefined;
 
-export function getMockCreditCredentialSource(): CreditCredentialSource {
-  return mockSource;
+function resolveMockMode(): MockMode {
+  const envMode =
+    typeof NEXT_PUBLIC_MOCK_MODE !== 'undefined' ? (NEXT_PUBLIC_MOCK_MODE as string) : '';
+  if (envMode === 'empty' || envMode === 'error') return envMode as MockMode;
+  return 'normal';
+}
+
+export function getCredentialSource(options?: MockSourceOptions): CreditCredentialSource {
+  const dataSource =
+    typeof NEXT_PUBLIC_DATA_SOURCE !== 'undefined' ? (NEXT_PUBLIC_DATA_SOURCE as string) : 'mock';
+
+  if (dataSource !== 'mock') {
+    // SEAM: replace this block with ActaCredentialSource when ready.
+    // Unrecognised values fall back to mock with a console warning.
+    console.warn(
+      `[getCredentialSource] Unrecognised NEXT_PUBLIC_DATA_SOURCE="${dataSource}". ` +
+        'Falling back to mock. Set to "real" when ActaCredentialSource is available.'
+    );
+  }
+
+  const mode = options?.mode ?? resolveMockMode();
+  const delayMs = options?.delayMs ?? 120;
+
+  return new MockCredentialSource({ mode, delayMs });
 }
