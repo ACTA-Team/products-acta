@@ -16,7 +16,9 @@
   },
   "common": {
     "appName": "Credit History",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "yes": "Yes",
+    "no": "No"
   },
   "home": {
     "title": "Credit History",
@@ -64,6 +66,22 @@
       "title": "Couldn't load your credentials",
       "description": "Something went wrong while reading your vault. Please try again.",
       "retry": "Try again"
+    },
+    "detail": {
+      "back": "Back to credentials",
+      "share": "Share",
+      "issuerDid": "Issuer DID",
+      "claims": "Claims",
+      "loadingDetail": "Loading credential…",
+      "notFound": {
+        "title": "Credential not found",
+        "description": "This credential does not exist or is no longer available in your vault."
+      },
+      "error": {
+        "title": "Couldn't load this credential",
+        "description": "Something went wrong while reading this credential. Please try again.",
+        "retry": "Try again"
+      }
     }
   },
   "share": {
