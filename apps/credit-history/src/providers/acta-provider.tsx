@@ -28,8 +28,8 @@ export function ActaProvider({ children }: ActaProviderProps) {
   const network = resolveNetwork();
   const baseURL = resolveBaseURL(network);
   const apiKey =
-    (typeof NEXT_PUBLIC_ACTA_API_KEY !== 'undefined' &&
-    (NEXT_PUBLIC_ACTA_API_KEY as string).length > 0)
+    typeof NEXT_PUBLIC_ACTA_API_KEY !== 'undefined' &&
+    (NEXT_PUBLIC_ACTA_API_KEY as string).length > 0
       ? (NEXT_PUBLIC_ACTA_API_KEY as string)
       : 'placeholder-batch1-no-api-calls';
 

@@ -24,7 +24,47 @@
   },
   "credentials": {
     "title": "Mis Credenciales",
-    "description": "Tus credenciales verificables aparecerán aquí."
+    "description": "Tus credenciales verificables aparecerán aquí.",
+    "subtitle": "Tus credenciales crediticias, en tu poder y listas para compartir.",
+    "results": "{count, plural, =0 {Sin credenciales} one {# credencial} other {# credenciales}}",
+    "filters": {
+      "category": "Categoría",
+      "status": "Estado",
+      "all": "Todas",
+      "clear": "Limpiar filtros"
+    },
+    "category": {
+      "INCOME": "Ingresos",
+      "EMPLOYMENT": "Empleo",
+      "REPAYMENT_HISTORY": "Historial de pagos",
+      "LOAN": "Préstamo",
+      "UTILITY": "Servicios"
+    },
+    "status": {
+      "valid": "Vigente",
+      "revoked": "Revocada el {date, date, medium}",
+      "revokedNoDate": "Revocada",
+      "invalid": "Inválida"
+    },
+    "item": {
+      "issuer": "Emisor",
+      "issued": "Emitida el {date, date, medium}",
+      "viewDetail": "Ver detalles"
+    },
+    "loading": "Cargando tus credenciales…",
+    "empty": {
+      "title": "Aún no tienes credenciales",
+      "description": "Cuando los emisores te otorguen credenciales crediticias, aparecerán aquí."
+    },
+    "emptyFiltered": {
+      "title": "Ninguna credencial coincide con estos filtros",
+      "description": "Prueba a limpiar los filtros para ver todas tus credenciales."
+    },
+    "error": {
+      "title": "No se pudieron cargar tus credenciales",
+      "description": "Algo salió mal al leer tu bóveda. Inténtalo de nuevo.",
+      "retry": "Reintentar"
+    }
   },
   "share": {
     "title": "Compartir",
