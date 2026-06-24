@@ -4,8 +4,9 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import { getCredentialSource } from '@acta-products/acta';
 import type { CreditCredential } from '@acta-products/acta/types';
-import { Button } from '@acta-products/ui';
-import { RefreshCw, Inbox, FileQuestion, AlertCircle } from 'lucide-react';
+import { Button, Card, Skeleton, StatePanel } from '@acta-products/ui';
+import { RefreshCw, Inbox, FileQuestion, AlertCircle, Wallet } from 'lucide-react';
+import { useSession } from '@/session/session-provider';
 import { categoryOf, statusKindOf } from '@/lib/credentials';
 import { CredentialFilters, type CategoryFilter, type StatusFilter } from './credential-filters';
 import { CredentialCard } from './credential-card';
@@ -15,30 +16,38 @@ type LoadState =
   | { phase: 'error' }
   | { phase: 'ready'; credentials: CreditCredential[] };
 
-interface MessagePanelProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  action?: React.ReactNode;
-}
-
-function MessagePanel({ icon, title, description, action }: MessagePanelProps) {
+function CredentialListSkeleton() {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border px-6 py-16 text-center">
-      <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        {icon}
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-9 w-56" />
+        <Skeleton className="h-5 w-80 max-w-full" />
       </div>
-      <div className="flex flex-col gap-1">
-        <h2 className="text-base font-semibold text-foreground">{title}</h2>
-        <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
+
+      <div className="flex flex-col gap-3">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Card key={index} className="flex items-center gap-4 p-4">
+            <Skeleton className="size-11 shrink-0 rounded-lg" />
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-3 w-56 max-w-full" />
+            </div>
+            <Skeleton className="size-4 shrink-0 rounded-sm" />
+          </Card>
+        ))}
       </div>
-      {action}
     </div>
   );
 }
 
 export function CredentialsView() {
   const t = useTranslations('credentials');
+  const tSession = useTranslations('session');
+  const { status: sessionStatus, connect } = useSession();
 
   const [state, setState] = React.useState<LoadState>({ phase: 'loading' });
   const [category, setCategory] = React.useState<CategoryFilter>('all');
@@ -93,18 +102,13 @@ export function CredentialsView() {
         </header>
 
         {state.phase === 'loading' && (
-          <div
-            className="flex flex-col items-center justify-center gap-4 py-20"
-            role="status"
-            aria-live="polite"
-          >
-            <RefreshCw className="size-7 animate-spin text-primary" />
-            <p className="animate-pulse text-sm text-muted-foreground">{t('loading')}</p>
+          <div role="status" aria-live="polite" aria-label={t('loading')}>
+            <CredentialListSkeleton />
           </div>
         )}
 
         {state.phase === 'error' && (
-          <MessagePanel
+          <StatePanel
             icon={<AlertCircle className="size-6" />}
             title={t('error.title')}
             description={t('error.description')}
@@ -118,11 +122,29 @@ export function CredentialsView() {
         )}
 
         {state.phase === 'ready' && state.credentials.length === 0 && (
-          <MessagePanel
-            icon={<Inbox className="size-6" />}
-            title={t('empty.title')}
-            description={t('empty.description')}
-          />
+          sessionStatus === 'disconnected' ? (
+            <StatePanel
+              icon={<Wallet className="size-6" />}
+              title={t('empty.connectTitle')}
+              description={t('empty.connectDescription')}
+              action={
+                <Button
+                  size="sm"
+                  className="cursor-pointer gap-1.5"
+                  onClick={() => connect().catch(console.error)}
+                >
+                  <Wallet className="size-3.5" />
+                  {tSession('connect')}
+                </Button>
+              }
+            />
+          ) : (
+            <StatePanel
+              icon={<Inbox className="size-6" />}
+              title={t('empty.title')}
+              description={t('empty.description')}
+            />
+          )
         )}
 
         {state.phase === 'ready' && state.credentials.length > 0 && (
@@ -141,7 +163,7 @@ export function CredentialsView() {
               </p>
 
               {filtered.length === 0 ? (
-                <MessagePanel
+                <StatePanel
                   icon={<FileQuestion className="size-6" />}
                   title={t('emptyFiltered.title')}
                   description={t('emptyFiltered.description')}

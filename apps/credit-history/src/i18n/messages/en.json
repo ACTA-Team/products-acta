@@ -56,7 +56,9 @@
     "loading": "Loading your credentials…",
     "empty": {
       "title": "No credentials yet",
-      "description": "Once issuers grant you credit credentials, they will appear here."
+      "description": "Once issuers grant you credit credentials, they will appear here.",
+      "connectTitle": "Connect your wallet",
+      "connectDescription": "Connect your Stellar wallet to access your credentials."
     },
     "emptyFiltered": {
       "title": "No credentials match these filters",

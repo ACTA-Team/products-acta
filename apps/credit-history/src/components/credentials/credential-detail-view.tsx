@@ -13,6 +13,8 @@ import {
   CardHeader,
   CategoryIcon,
   CopyField,
+  Skeleton,
+  StatePanel,
   StatusBadge,
   type CredentialStatusKind,
 } from '@acta-products/ui';
@@ -38,25 +40,59 @@ type LoadState =
   | { phase: 'notFound' }
   | { phase: 'ready'; credential: CreditCredential };
 
-interface MessagePanelProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  action?: React.ReactNode;
-}
-
-function MessagePanel({ icon, title, description, action }: MessagePanelProps) {
+function CredentialDetailSkeleton() {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border px-6 py-16 text-center">
-      <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        {icon}
-      </div>
-      <div className="flex flex-col gap-1">
-        <h2 className="text-base font-semibold text-foreground">{title}</h2>
-        <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
-      </div>
-      {action}
-    </div>
+    <Card className="overflow-hidden">
+      <CardHeader className="gap-4 border-b border-border/60 pb-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 items-start gap-4">
+            <Skeleton className="size-12 shrink-0 rounded-lg" />
+            <div className="flex min-w-0 flex-col gap-2">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-7 w-56 max-w-full" />
+              <Skeleton className="h-4 w-72 max-w-full" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+      </CardHeader>
+
+      <CardContent className="flex flex-col gap-6 pt-6">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-3 w-16" />
+          <div className="divide-y divide-border rounded-lg border border-border">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] sm:gap-4"
+              >
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-36" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+
+      <CardFooter className="flex flex-col gap-3 border-t border-border/60 pt-6 sm:flex-row sm:justify-end">
+        <Skeleton className="h-10 w-full rounded-md sm:w-32" />
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -131,18 +167,13 @@ export function CredentialDetailView({ id }: CredentialDetailViewProps) {
         </Link>
 
         {state.phase === 'loading' && (
-          <div
-            className="flex flex-col items-center justify-center gap-4 py-20"
-            role="status"
-            aria-live="polite"
-          >
-            <RefreshCw className="size-7 animate-spin text-primary" />
-            <p className="animate-pulse text-sm text-muted-foreground">{t('detail.loadingDetail')}</p>
+          <div role="status" aria-live="polite" aria-label={t('detail.loadingDetail')}>
+            <CredentialDetailSkeleton />
           </div>
         )}
 
         {state.phase === 'error' && (
-          <MessagePanel
+          <StatePanel
             icon={<AlertCircle className="size-6" />}
             title={t('detail.error.title')}
             description={t('detail.error.description')}
@@ -156,7 +187,7 @@ export function CredentialDetailView({ id }: CredentialDetailViewProps) {
         )}
 
         {state.phase === 'notFound' && (
-          <MessagePanel
+          <StatePanel
             icon={<FileQuestion className="size-6" />}
             title={t('detail.notFound.title')}
             description={t('detail.notFound.description')}

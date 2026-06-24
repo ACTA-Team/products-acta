@@ -56,7 +56,9 @@
     "loading": "Cargando tus credenciales…",
     "empty": {
       "title": "Aún no tienes credenciales",
-      "description": "Cuando los emisores te otorguen credenciales crediticias, aparecerán aquí."
+      "description": "Cuando los emisores te otorguen credenciales crediticias, aparecerán aquí.",
+      "connectTitle": "Conecta tu billetera",
+      "connectDescription": "Conecta tu billetera Stellar para acceder a tus credenciales."
     },
     "emptyFiltered": {
       "title": "Ninguna credencial coincide con estos filtros",
