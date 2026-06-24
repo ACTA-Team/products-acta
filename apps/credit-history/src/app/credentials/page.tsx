@@ -1,12 +1,5 @@
-import { getTranslations } from 'next-intl/server';
+import { CredentialsView } from '@/components/credentials/credentials-view';
 
-export default async function CredentialsPage() {
-  const t = await getTranslations('credentials');
-
-  return (
-    <section className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center">
-      <h1 className="text-3xl font-semibold tracking-tight font-display">{t('title')}</h1>
-      <p className="max-w-md text-muted-foreground">{t('description')}</p>
-    </section>
-  );
+export default function CredentialsPage() {
+  return <CredentialsView />;
 }

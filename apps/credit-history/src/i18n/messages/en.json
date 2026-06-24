@@ -24,7 +24,47 @@
   },
   "credentials": {
     "title": "My Credentials",
-    "description": "Your verifiable credentials will appear here."
+    "description": "Your verifiable credentials will appear here.",
+    "subtitle": "Your credit credentials, owned by you and ready to share.",
+    "results": "{count, plural, =0 {No credentials} one {# credential} other {# credentials}}",
+    "filters": {
+      "category": "Category",
+      "status": "Status",
+      "all": "All",
+      "clear": "Clear filters"
+    },
+    "category": {
+      "INCOME": "Income",
+      "EMPLOYMENT": "Employment",
+      "REPAYMENT_HISTORY": "Repayment history",
+      "LOAN": "Loan",
+      "UTILITY": "Utility"
+    },
+    "status": {
+      "valid": "Current",
+      "revoked": "Revoked on {date, date, medium}",
+      "revokedNoDate": "Revoked",
+      "invalid": "Invalid"
+    },
+    "item": {
+      "issuer": "Issuer",
+      "issued": "Issued {date, date, medium}",
+      "viewDetail": "View details"
+    },
+    "loading": "Loading your credentials…",
+    "empty": {
+      "title": "No credentials yet",
+      "description": "Once issuers grant you credit credentials, they will appear here."
+    },
+    "emptyFiltered": {
+      "title": "No credentials match these filters",
+      "description": "Try clearing the filters to see all your credentials."
+    },
+    "error": {
+      "title": "Couldn't load your credentials",
+      "description": "Something went wrong while reading your vault. Please try again.",
+      "retry": "Try again"
+    }
   },
   "share": {
     "title": "Share",
