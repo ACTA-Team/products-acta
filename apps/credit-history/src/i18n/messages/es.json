@@ -90,6 +90,39 @@
     "title": "Compartir",
     "description": "Comparte tus credenciales con terceros aquí."
   },
+  "verify": {
+    "title": "Reporte de presentación verificable",
+    "subtitle": "Verificado criptográficamente vía ACTA en la red Stellar",
+    "loading": "Ejecutando verificación criptográfica…",
+    "holderInfo": "Datos del titular",
+    "holderName": "Nombre del titular",
+    "holderDid": "DID del titular",
+    "expiration": "Expira",
+    "neverExpires": "Sin expiración",
+    "expiredAt": "Expiró el",
+    "credentialsIncluded": "Credenciales verificables incluidas",
+    "claims": "Datos verificados",
+    "backToApp": "Ir al panel de billetera",
+    "banner": {
+      "valid": {
+        "title": "Verificada y vigente",
+        "description": "Esta presentación es criptográficamente auténtica, coincide con el titular y está vigente."
+      },
+      "revoked": {
+        "title": "Presentación revocada",
+        "description": "Esta presentación incluye una o más credenciales revocadas por su emisor."
+      },
+      "invalid": {
+        "title": "Presentación inválida o expirada",
+        "description": "Este enlace de verificación expiró, está malformado o fue invalidado."
+      }
+    },
+    "invalid": {
+      "title": "Falló la verificación de la presentación",
+      "description": "El token de verificación no pudo descifrarse, decodificarse o validarse. Solicita un nuevo enlace al titular de las credenciales.",
+      "expiredDescription": "Este enlace de verificación expiró el {date, date, medium} a las {date, time, short}. Solicita un nuevo enlace al titular de las credenciales."
+    }
+  },
   "session": {
     "connect": "Conectar billetera",
     "connecting": "Conectando…",

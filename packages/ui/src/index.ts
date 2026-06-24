@@ -20,4 +20,6 @@ export { NavLink } from './components/nav-link';
 export { Skeleton } from './components/skeleton';
 export { StatePanel } from './components/state-panel';
 export type { StatePanelProps } from './components/state-panel';
+export { VerificationBanner } from './components/verification-banner';
+export type { VerificationBannerProps } from './components/verification-banner';
 export { cn } from './lib/utils';

@@ -90,6 +90,39 @@
     "title": "Share",
     "description": "Share your credentials with third parties here."
   },
+  "verify": {
+    "title": "Verifiable presentation report",
+    "subtitle": "Cryptographically verified via ACTA on the Stellar network",
+    "loading": "Running cryptographic verification…",
+    "holderInfo": "Holder details",
+    "holderName": "Holder name",
+    "holderDid": "Holder DID",
+    "expiration": "Expires",
+    "neverExpires": "Never expires",
+    "expiredAt": "Expired at",
+    "credentialsIncluded": "Included verifiable credentials",
+    "claims": "Claims",
+    "backToApp": "Go to wallet dashboard",
+    "banner": {
+      "valid": {
+        "title": "Verified & valid",
+        "description": "This presentation is cryptographically authentic, matches the holder, and is currently valid."
+      },
+      "revoked": {
+        "title": "Revoked presentation",
+        "description": "This presentation contains one or more credentials that have been revoked by their issuer."
+      },
+      "invalid": {
+        "title": "Invalid or expired presentation",
+        "description": "This verification link has expired, is malformed, or has been invalidated."
+      }
+    },
+    "invalid": {
+      "title": "Presentation verification failed",
+      "description": "The verification token could not be decrypted, decoded, or validated. Please request a new link from the credential owner.",
+      "expiredDescription": "This verification link expired on {date, date, medium} at {date, time, short}. Please request a new link from the credential owner."
+    }
+  },
   "session": {
     "connect": "Connect wallet",
     "connecting": "Connecting…",
