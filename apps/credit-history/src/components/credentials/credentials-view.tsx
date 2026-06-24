@@ -7,11 +7,7 @@ import type { CreditCredential } from '@acta-products/acta/types';
 import { Button } from '@acta-products/ui';
 import { RefreshCw, Inbox, FileQuestion, AlertCircle } from 'lucide-react';
 import { categoryOf, statusKindOf } from '@/lib/credentials';
-import {
-  CredentialFilters,
-  type CategoryFilter,
-  type StatusFilter,
-} from './credential-filters';
+import { CredentialFilters, type CategoryFilter, type StatusFilter } from './credential-filters';
 import { CredentialCard } from './credential-card';
 
 type LoadState =
@@ -113,12 +109,7 @@ export function CredentialsView() {
             title={t('error.title')}
             description={t('error.description')}
             action={
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
-                onClick={retry}
-              >
+              <Button variant="outline" size="sm" className="cursor-pointer" onClick={retry}>
                 <RefreshCw className="size-3.5" />
                 {t('error.retry')}
               </Button>

@@ -92,11 +92,7 @@ export function CredentialFilters({
             {t('filters.all')}
           </FilterPill>
           {CREDENTIAL_STATUSES.map((value) => (
-            <FilterPill
-              key={value}
-              active={status === value}
-              onClick={() => onStatusChange(value)}
-            >
+            <FilterPill key={value} active={status === value} onClick={() => onStatusChange(value)}>
               {statusLabel(value)}
             </FilterPill>
           ))}

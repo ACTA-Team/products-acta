@@ -15,12 +15,7 @@ import { cn } from '../lib/utils';
  * importing an app-level type) so the UI package stays free of product deps.
  * Callers pass the same category keys used across the credit-history product.
  */
-export type CreditCategoryKey =
-  | 'INCOME'
-  | 'EMPLOYMENT'
-  | 'REPAYMENT_HISTORY'
-  | 'LOAN'
-  | 'UTILITY';
+export type CreditCategoryKey = 'INCOME' | 'EMPLOYMENT' | 'REPAYMENT_HISTORY' | 'LOAN' | 'UTILITY';
 
 const CATEGORY_ICONS: Record<CreditCategoryKey, LucideIcon> = {
   INCOME: Banknote,
