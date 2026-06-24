@@ -16,7 +16,9 @@
   },
   "common": {
     "appName": "Credit History",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "yes": "Sí",
+    "no": "No"
   },
   "home": {
     "title": "Credit History",
@@ -64,6 +66,22 @@
       "title": "No se pudieron cargar tus credenciales",
       "description": "Algo salió mal al leer tu bóveda. Inténtalo de nuevo.",
       "retry": "Reintentar"
+    },
+    "detail": {
+      "back": "Volver a credenciales",
+      "share": "Compartir",
+      "issuerDid": "DID del emisor",
+      "claims": "Datos verificados",
+      "loadingDetail": "Cargando credencial…",
+      "notFound": {
+        "title": "Credencial no encontrada",
+        "description": "Esta credencial no existe o ya no está disponible en tu bóveda."
+      },
+      "error": {
+        "title": "No se pudo cargar esta credencial",
+        "description": "Algo salió mal al leer esta credencial. Inténtalo de nuevo.",
+        "retry": "Reintentar"
+      }
     }
   },
   "share": {

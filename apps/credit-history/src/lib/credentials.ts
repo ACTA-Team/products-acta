@@ -73,3 +73,50 @@ export function revokedAtOf(credential: CreditCredential): string | undefined {
   const revokedAt = credential.claims?.revokedAt;
   return typeof revokedAt === 'string' ? revokedAt : undefined;
 }
+
+/** Keys omitted from the claims list because they are shown elsewhere in the UI. */
+export const DETAIL_CLAIMS_OMIT = new Set(['revokedAt']);
+
+/**
+ * Turn a camelCase / snake_case claim key into a readable label without
+ * hardcoding per-category copy (claims are issuer-defined).
+ */
+export function humanizeClaimKey(key: string): string {
+  const spaced = key
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/_/g, ' ')
+    .trim();
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+export interface FormatClaimValueOptions {
+  yesLabel: string;
+  noLabel: string;
+  emptyLabel?: string;
+}
+
+/**
+ * Format a claim value for display. Primitives render as strings; booleans
+ * use caller-provided yes/no labels (i18n). Objects/arrays stringify as JSON.
+ */
+export function formatClaimValue(
+  value: unknown,
+  { yesLabel, noLabel, emptyLabel = '—' }: FormatClaimValueOptions
+): string {
+  if (value === null || value === undefined) return emptyLabel;
+  if (typeof value === 'boolean') return value ? yesLabel : noLabel;
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'string') return value;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return emptyLabel;
+  }
+}
+
+/** Claim entries for the detail view, excluding keys shown elsewhere. */
+export function detailClaimEntries(
+  claims: Record<string, unknown>
+): Array<[string, unknown]> {
+  return Object.entries(claims).filter(([key]) => !DETAIL_CLAIMS_OMIT.has(key));
+}
