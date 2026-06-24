@@ -221,20 +221,17 @@ class MockCredentialSource implements CreditCredentialSource {
   }
 }
 
-// Inlined by Next.js build — declared here so TypeScript resolves the names.
-declare const NEXT_PUBLIC_MOCK_MODE: string | undefined;
-declare const NEXT_PUBLIC_DATA_SOURCE: string | undefined;
+// Next.js inlines `process.env.NEXT_PUBLIC_*` at build time when bundled by the app.
+declare const process: { env: Record<string, string | undefined> };
 
 function resolveMockMode(): MockMode {
-  const envMode =
-    typeof NEXT_PUBLIC_MOCK_MODE !== 'undefined' ? (NEXT_PUBLIC_MOCK_MODE as string) : '';
-  if (envMode === 'empty' || envMode === 'error') return envMode as MockMode;
+  const envMode = process.env.NEXT_PUBLIC_MOCK_MODE ?? '';
+  if (envMode === 'empty' || envMode === 'error') return envMode;
   return 'normal';
 }
 
 export function getCredentialSource(options?: MockSourceOptions): CreditCredentialSource {
-  const dataSource =
-    typeof NEXT_PUBLIC_DATA_SOURCE !== 'undefined' ? (NEXT_PUBLIC_DATA_SOURCE as string) : 'mock';
+  const dataSource = process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock';
 
   if (dataSource !== 'mock') {
     // SEAM: replace this block with ActaCredentialSource when ready.
