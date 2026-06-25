@@ -22,4 +22,11 @@ export { StatePanel } from './components/state-panel';
 export type { StatePanelProps } from './components/state-panel';
 export { VerificationBanner } from './components/verification-banner';
 export type { VerificationBannerProps } from './components/verification-banner';
+export { ProfileSummaryCard } from './components/profile-summary-card';
+export type {
+  ProfileSummaryCardProps,
+  ProfileSummaryStat,
+  ProfileSummaryCategoryItem,
+  ProfileSummaryTimeline,
+} from './components/profile-summary-card';
 export { cn } from './lib/utils';
