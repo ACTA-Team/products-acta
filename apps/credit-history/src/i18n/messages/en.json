@@ -28,6 +28,21 @@
     "title": "My Credentials",
     "description": "Your verifiable credentials will appear here.",
     "subtitle": "Your credit credentials, owned by you and ready to share.",
+    "summary": {
+      "title": "Credit profile summary",
+      "disclaimer": "An informational overview of your verifiable credentials. This is not a credit score or risk assessment.",
+      "stats": {
+        "total": "Total credentials",
+        "valid": "Current",
+        "revoked": "Revoked",
+        "historySince": "History since"
+      },
+      "categoriesTitle": "By category",
+      "timeline": {
+        "today": "Today",
+        "caption": "A snapshot of your verifiable credit history."
+      }
+    },
     "results": "{count, plural, =0 {No credentials} one {# credential} other {# credentials}}",
     "filters": {
       "category": "Category",

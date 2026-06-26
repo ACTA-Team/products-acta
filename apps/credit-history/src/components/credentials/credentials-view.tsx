@@ -1,13 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { getCredentialSource } from '@acta-products/acta';
 import type { CreditCredential } from '@acta-products/acta/types';
-import { Button, Card, Skeleton, StatePanel } from '@acta-products/ui';
+import { Button, Card, ProfileSummaryCard, Skeleton, StatePanel } from '@acta-products/ui';
 import { RefreshCw, Inbox, FileQuestion, AlertCircle, Wallet } from 'lucide-react';
 import { useSession } from '@/session/session-provider';
-import { categoryOf, statusKindOf } from '@/lib/credentials';
+import { CREDIT_CATEGORIES, categoryOf, statusKindOf } from '@/lib/credentials';
+import { computeProfileSummary } from '@/lib/profile-summary';
 import { CredentialFilters, type CategoryFilter, type StatusFilter } from './credential-filters';
 import { CredentialCard } from './credential-card';
 
@@ -47,6 +48,7 @@ function CredentialListSkeleton() {
 export function CredentialsView() {
   const t = useTranslations('credentials');
   const tSession = useTranslations('session');
+  const format = useFormatter();
   const { status: sessionStatus, connect } = useSession();
 
   const [state, setState] = React.useState<LoadState>({ phase: 'loading' });
@@ -82,6 +84,11 @@ export function CredentialsView() {
       return categoryMatch && statusMatch;
     });
   }, [state, category, status]);
+
+  const summary = React.useMemo(
+    () => (state.phase === 'ready' ? computeProfileSummary(state.credentials) : null),
+    [state]
+  );
 
   const clearFilters = () => {
     setCategory('all');
@@ -121,8 +128,9 @@ export function CredentialsView() {
           />
         )}
 
-        {state.phase === 'ready' && state.credentials.length === 0 && (
-          sessionStatus === 'disconnected' ? (
+        {state.phase === 'ready' &&
+          state.credentials.length === 0 &&
+          (sessionStatus === 'disconnected' ? (
             <StatePanel
               icon={<Wallet className="size-6" />}
               title={t('empty.connectTitle')}
@@ -144,11 +152,49 @@ export function CredentialsView() {
               title={t('empty.title')}
               description={t('empty.description')}
             />
-          )
-        )}
+          ))}
 
         {state.phase === 'ready' && state.credentials.length > 0 && (
           <>
+            {summary && (
+              <ProfileSummaryCard
+                title={t('summary.title')}
+                disclaimer={t('summary.disclaimer')}
+                stats={[
+                  { label: t('summary.stats.total'), value: String(state.credentials.length) },
+                  { label: t('summary.stats.valid'), value: String(summary.counts.valid) },
+                  { label: t('summary.stats.revoked'), value: String(summary.counts.revoked) },
+                  {
+                    label: t('summary.stats.historySince'),
+                    value: summary.oldestIssuedAt
+                      ? format.dateTime(new Date(summary.oldestIssuedAt), {
+                          year: 'numeric',
+                          month: 'short',
+                        })
+                      : '—',
+                  },
+                ]}
+                categoriesTitle={t('summary.categoriesTitle')}
+                categories={CREDIT_CATEGORIES.map((category) => ({
+                  category,
+                  label: t(`category.${category}`),
+                  count: summary.totalsByCategory[category],
+                }))}
+                timeline={
+                  summary.oldestIssuedAt
+                    ? {
+                        startLabel: format.dateTime(new Date(summary.oldestIssuedAt), {
+                          year: 'numeric',
+                          month: 'short',
+                        }),
+                        endLabel: t('summary.timeline.today'),
+                        caption: t('summary.timeline.caption'),
+                      }
+                    : undefined
+                }
+              />
+            )}
+
             <CredentialFilters
               category={category}
               status={status}
