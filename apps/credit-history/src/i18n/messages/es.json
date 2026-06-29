@@ -28,6 +28,21 @@
     "title": "Mis Credenciales",
     "description": "Tus credenciales verificables aparecerán aquí.",
     "subtitle": "Tus credenciales crediticias, en tu poder y listas para compartir.",
+    "summary": {
+      "title": "Resumen de tu perfil crediticio",
+      "disclaimer": "Una visión informativa de tus credenciales verificables. No es una puntuación crediticia ni una evaluación de riesgo.",
+      "stats": {
+        "total": "Credenciales totales",
+        "valid": "Vigentes",
+        "revoked": "Revocadas",
+        "historySince": "Historial desde"
+      },
+      "categoriesTitle": "Por categoría",
+      "timeline": {
+        "today": "Hoy",
+        "caption": "Una vista general de tu historial crediticio verificable."
+      }
+    },
     "results": "{count, plural, =0 {Sin credenciales} one {# credencial} other {# credenciales}}",
     "filters": {
       "category": "Categoría",
