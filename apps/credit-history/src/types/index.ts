@@ -24,7 +24,7 @@ export interface CreditCredential {
   id: string;
   category: CreditCategory;
   issuerName: string;
-  issuerDid: string; // format did:pkh:stellar:{network}:{G…}
+  issuerDid: string; // format did:stellar:{network}:{G…}
   issuedAt: string; // ISO timestamp
   status: CreditStatus;
   claims: Record<string, unknown>; // category-specific data (intentionally loose typing)

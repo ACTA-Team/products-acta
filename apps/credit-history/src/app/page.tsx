@@ -1,4 +1,4 @@
-import { DID_PKH_STELLAR_PREFIX } from '@acta-products/acta/did';
+import { DID_STELLAR_PREFIX } from '@acta-products/acta/did';
 import {
   Button,
   Card,
@@ -72,7 +72,7 @@ export default function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent className="text-xs text-muted-foreground">
-            Direct cryptographic vault interactions and real-time did:pkh:stellar resolver.
+            Direct cryptographic vault interactions and real-time did:stellar resolver.
           </CardContent>
           <CardFooter className="border-t border-border/40 pt-4 flex justify-between items-center">
             <Badge variant="outline" className="text-[10px] text-muted-foreground">
@@ -90,7 +90,7 @@ export default function Home() {
         <p className="font-mono">
           Identity Method:{' '}
           <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">
-            {DID_PKH_STELLAR_PREFIX}
+            {DID_STELLAR_PREFIX}
           </code>
         </p>
         <p>Built with Next.js 16, React 19, and Tailwind CSS v4.</p>

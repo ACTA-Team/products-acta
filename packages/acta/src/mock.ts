@@ -1,4 +1,4 @@
-import { didPkhStellar, StellarNetwork } from './did';
+import { didStellar, StellarNetwork } from './did';
 import type {
   CreditCredential,
   CreditProfileSummary,
@@ -18,7 +18,7 @@ export const FIXTURES: CreditCredential[] = [
     type: 'IncomeVerification',
     title: 'Anchor Payroll Income',
     issuer: 'Stellar Anchor Payroll Services',
-    issuerDid: didPkhStellar(MAINNET, 'GAPAYROLL5ANCHORSVC1234567890ABCDEF1234567890ABCDEF12345'),
+    issuerDid: didStellar(MAINNET, 'GAPAYROLL5ANCHORSVC1234567890ABCDEF1234567890ABCDEF12345'),
     issueDate: '2026-03-01T14:15:00Z',
     value: '$45,000 USD / yr',
     description: 'Verified recurring salary deposits routed through a registered Stellar Anchor.',
@@ -39,7 +39,7 @@ export const FIXTURES: CreditCredential[] = [
     type: 'EmploymentVerification',
     title: 'Full-Time Employment Verification',
     issuer: 'WorkVerify DAO',
-    issuerDid: didPkhStellar(MAINNET, 'GWORKVERIFYDAO9876543210ABCDEF9876543210ABCDEF9876543210'),
+    issuerDid: didStellar(MAINNET, 'GWORKVERIFYDAO9876543210ABCDEF9876543210ABCDEF9876543210'),
     issueDate: '2025-11-10T09:00:00Z',
     value: 'Full-Time',
     description:
@@ -60,7 +60,7 @@ export const FIXTURES: CreditCredential[] = [
     type: 'MicrofinanceRepayment',
     title: 'Microfinance Repayment Record',
     issuer: 'Community Microfinance Network',
-    issuerDid: didPkhStellar(TESTNET, 'GCMFNEWORK1234567890ABCDEF1234567890ABCDEF1234567890ABCD'),
+    issuerDid: didStellar(TESTNET, 'GCMFNEWORK1234567890ABCDEF1234567890ABCDEF1234567890ABCD'),
     issueDate: '2025-08-20T10:30:00Z',
     value: '100% On-time',
     description: 'Historical repayment record for community micro-loans settled on-chain.',
@@ -80,7 +80,7 @@ export const FIXTURES: CreditCredential[] = [
     type: 'DeFiLoan',
     title: 'Soroban DeFi Loan',
     issuer: 'Soroban Lending Pool v2',
-    issuerDid: didPkhStellar(MAINNET, 'GSOROBANLEND2222222222ABCDEF2222222222ABCDEF2222222222AB'),
+    issuerDid: didStellar(MAINNET, 'GSOROBANLEND2222222222ABCDEF2222222222ABCDEF2222222222AB'),
     issueDate: '2024-12-05T08:00:00Z',
     value: '$5,000 USD',
     description: 'Active DeFi loan issued via a Soroban smart contract lending pool.',
@@ -101,7 +101,7 @@ export const FIXTURES: CreditCredential[] = [
     type: 'UtilityPayment',
     title: 'Electric Bill Payment History',
     issuer: 'GreenGrid Utility Verifier',
-    issuerDid: didPkhStellar(MAINNET, 'GGREENGRIDUTILITY3333333333ABCDEF3333333333ABCDEF333333'),
+    issuerDid: didStellar(MAINNET, 'GGREENGRIDUTILITY3333333333ABCDEF3333333333ABCDEF333333'),
     issueDate: '2026-01-15T08:00:00Z',
     value: '18 months on-time',
     description: 'Consecutive on-time utility payments verified by a registered billing authority.',
@@ -121,7 +121,7 @@ export const FIXTURES: CreditCredential[] = [
     type: 'LegacyCreditLine',
     title: 'Traditional Credit Line (Revoked)',
     issuer: 'Traditional Financial Services',
-    issuerDid: didPkhStellar(MAINNET, 'GTRADFINSERVICES8888888888ABCDEF8888888888ABCDEF88888888'),
+    issuerDid: didStellar(MAINNET, 'GTRADFINSERVICES8888888888ABCDEF8888888888ABCDEF88888888'),
     issueDate: '2024-05-10T09:00:00Z',
     value: 'Delinquent',
     description:
@@ -155,7 +155,7 @@ function deriveProfileSummary(credentials: CreditCredential[]): CreditProfileSum
     scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : undefined;
 
   return {
-    holderDid: didPkhStellar(TESTNET, 'GHOLDERVAULT111222333444555ABCDEF111222333444555ABCDEF11'),
+    holderDid: didStellar(TESTNET, 'GHOLDERVAULT111222333444555ABCDEF111222333444555ABCDEF11'),
     holderName: 'Alex Mercer',
     averageScore,
     activeCredentialsCount: active.length,
