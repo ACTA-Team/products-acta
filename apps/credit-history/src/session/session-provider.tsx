@@ -14,11 +14,11 @@
  *
  * Network:
  *   Read from NEXT_PUBLIC_STELLAR_NETWORK (same env var as ActaProvider).
- *   DID is always derived with didPkhStellar — never constructed by hand.
+ *   DID is always derived with didStellar — never constructed by hand.
  */
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { didPkhStellar } from '@acta-products/acta/did';
+import { didStellar } from '@acta-products/acta/did';
 import type { StellarNetwork } from '@acta-products/acta/did';
 import { getWalletConnector } from './wallet-connector';
 
@@ -43,7 +43,7 @@ export interface SessionState {
   status: SessionStatus;
   /** Stellar G... address, or null when disconnected. */
   address: string | null;
-  /** Full DID in format did:pkh:stellar:{network}:{G...}, or null when disconnected. */
+  /** Full DID in format did:stellar:{network}:{G...}, or null when disconnected. */
   did: string | null;
   /** Initiate wallet connection. */
   connect: () => Promise<void>;
@@ -107,7 +107,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const did = address !== null ? didPkhStellar(network, address) : null;
+  const did = address !== null ? didStellar(network, address) : null;
 
   return (
     <SessionContext.Provider value={{ status, address, did, connect, disconnect }}>

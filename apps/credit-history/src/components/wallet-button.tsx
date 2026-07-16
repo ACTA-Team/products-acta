@@ -21,13 +21,13 @@ function truncateAddress(address: string): string {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
-/** did:pkh:stellar:testnet:GABC...7KQ4 — keeps prefix, truncates address */
+/** did:stellar:testnet:GABC...7KQ4 — keeps prefix, truncates address */
 function truncateDid(did: string): string {
   const parts = did.split(':');
-  // did:pkh:stellar:{network}:{address}
-  if (parts.length < 5) return did;
-  const prefix = parts.slice(0, 4).join(':');
-  const addr = parts[4];
+  // did:stellar:{network}:{address}
+  if (parts.length < 4) return did;
+  const prefix = parts.slice(0, 3).join(':');
+  const addr = parts[3];
   return `${prefix}:${addr.slice(0, 4)}...${addr.slice(-4)}`;
 }
 
