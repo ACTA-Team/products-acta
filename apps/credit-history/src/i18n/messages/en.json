@@ -22,7 +22,20 @@
   },
   "home": {
     "title": "Credit History",
-    "description": "Portable credit history built on ACTA verifiable credentials. Product skeleton — nothing implemented yet."
+    "description": "Portable credit history built on ACTA verifiable credentials. Product skeleton — nothing implemented yet.",
+    "protocol": "ACTA Protocol",
+    "subtitle": "Own, manage, and share your verifiable credit reputation. Port your financial history securely without relying on centralized credit bureaus.",
+    "shareTitle": "Generate Presentation",
+    "shareDesc": "Select credit credentials and create a secure, verifiable link to share with lenders.",
+    "shareFeatures": "Supports custom expiration dates and dynamic on-chain verification checks.",
+    "ready": "Ready",
+    "getStarted": "Get Started",
+    "vaultTitle": "My Credit Vault",
+    "vaultDesc": "View your scores, repayment history, and verify identity credentials in your personal vault.",
+    "vaultFeatures": "Direct cryptographic vault interactions and real-time did:stellar resolver.",
+    "unavailable": "Unavailable",
+    "identityMethod": "Identity Method:",
+    "techStack": "Built with Next.js 16, React 19, and Tailwind CSS v4."
   },
   "credentials": {
     "title": "My Credentials",
@@ -102,8 +115,39 @@
     }
   },
   "share": {
-    "title": "Share",
-    "description": "Share your credentials with third parties here."
+    "title": "Share Presentation",
+    "subtitle": "Select credentials to generate a secure presentation link for lenders.",
+    "selectCredentials": "Select Credentials",
+    "selectCredentialsDesc": "Only selected items will be encoded and shared in the presentation.",
+    "expirationOptions": "Presentation Expiration",
+    "expirationOptionsDesc": "Set how long the generated verification link remains active.",
+    "exp": {
+      "hour1": "1 Hour",
+      "day1": "1 Day",
+      "days7": "7 Days",
+      "days30": "30 Days",
+      "custom": "Custom Expiration",
+      "never": "No Expiration"
+    },
+    "generateBtn": "Generate Shareable Link",
+    "generating": "Generating Link...",
+    "linkReady": "Shareable Link Generated",
+    "linkReadyDesc": "Provide this link to lenders. They can verify your credentials without relying on central intermediaries.",
+    "copySuccess": "Copied to clipboard!",
+    "previewBtn": "Preview Verification Report",
+    "backBtn": "Create New Presentation",
+    "noSelection": "Please select at least one credential to generate a shareable presentation.",
+    "customDateLabel": "Choose Custom Expiration Date & Time",
+    "loadingVault": "Loading vault data...",
+    "sharedDetails": "Shared Details:",
+    "holder": "Holder",
+    "expiration": "Expiration",
+    "includedCredentials": "Included Credentials ({count})",
+    "deselectAll": "Deselect All",
+    "selectAll": "Select All",
+    "value": "Value:",
+    "issuer": "Issuer:",
+    "vaultTitle": "ACTA Credit Vault"
   },
   "verify": {
     "title": "Verifiable presentation report",
