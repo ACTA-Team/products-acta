@@ -115,8 +115,6 @@ export function formatClaimValue(
 }
 
 /** Claim entries for the detail view, excluding keys shown elsewhere. */
-export function detailClaimEntries(
-  claims: Record<string, unknown>
-): Array<[string, unknown]> {
+export function detailClaimEntries(claims: Record<string, unknown>): Array<[string, unknown]> {
   return Object.entries(claims).filter(([key]) => !DETAIL_CLAIMS_OMIT.has(key));
 }

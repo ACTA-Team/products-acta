@@ -22,7 +22,20 @@
   },
   "home": {
     "title": "Credit History",
-    "description": "Historial crediticio portable sobre credenciales verificables de ACTA."
+    "description": "Historial crediticio portable sobre credenciales verificables de ACTA.",
+    "protocol": "Protocolo ACTA",
+    "subtitle": "Posee, administra y comparte tu reputación crediticia verificable. Porta tu historial financiero de forma segura sin depender de agencias de crédito centralizadas.",
+    "shareTitle": "Generar Presentación",
+    "shareDesc": "Selecciona credenciales de crédito y crea un enlace seguro y verificable para compartir con prestamistas.",
+    "shareFeatures": "Soporta fechas de expiración personalizadas y verificaciones dinámicas en cadena.",
+    "ready": "Listo",
+    "getStarted": "Comenzar",
+    "vaultTitle": "Mi Bóveda de Crédito",
+    "vaultDesc": "Visualiza tus puntuaciones, historial de pagos y verifica credenciales de identidad en tu bóveda personal.",
+    "vaultFeatures": "Interacciones directas con la bóveda criptográfica y resolución en tiempo real de did:stellar.",
+    "unavailable": "No disponible",
+    "identityMethod": "Método de Identidad:",
+    "techStack": "Construido con Next.js 16, React 19 y Tailwind CSS v4."
   },
   "credentials": {
     "title": "Mis Credenciales",
@@ -102,8 +115,41 @@
     }
   },
   "share": {
-    "title": "Compartir",
-    "description": "Comparte tus credenciales con terceros aquí."
+    "title": "Compartir Presentación",
+    "subtitle": "Selecciona credenciales para generar un enlace de presentación seguro para prestamistas.",
+    "selectCredentials": "Seleccionar Credenciales",
+    "selectCredentialsDesc": "Solo los elementos seleccionados serán codificados y compartidos en la presentación.",
+    "expirationOptions": "Expiración de la Presentación",
+    "expirationOptionsDesc": "Establece cuánto tiempo permanecerá activo el enlace de verificación generado.",
+    "exp": {
+      "hour1": "1 Hora",
+      "day1": "1 Día",
+      "days7": "7 Días",
+      "days30": "30 Días",
+      "custom": "Expiración Personalizada",
+      "never": "Sin Expiración"
+    },
+    "generateBtn": "Generar Enlace para Compartir",
+    "generating": "Generando Enlace...",
+    "linkReady": "Enlace para Compartir Generado",
+    "linkReadyDesc": "Proporciona este enlace a los prestamistas. Ellos pueden verificar tus credenciales sin depender de intermediarios centrales.",
+    "copySuccess": "¡Copiado al portapapeles!",
+    "previewBtn": "Vista Previa del Reporte de Verificación",
+    "backBtn": "Crear Nueva Presentación",
+    "noSelection": "Por favor selecciona al menos una credencial para generar una presentación para compartir.",
+    "customDateLabel": "Elige la Fecha y Hora de Expiración Personalizada",
+    "loadingVault": "Cargando datos de la bóveda...",
+    "sharedDetails": "Detalles Compartidos:",
+    "holder": "Titular",
+    "expiration": "Expiración",
+    "includedCredentials": "Credenciales Incluidas ({count})",
+    "deselectAll": "Deseleccionar Todo",
+    "selectAll": "Seleccionar Todo",
+    "value": "Valor:",
+    "issuer": "Emisor:",
+    "vaultTitle": "Bóveda de Crédito ACTA",
+    "revoked": "Revocada",
+    "valid": "Vigente"
   },
   "verify": {
     "title": "Reporte de presentación verificable",
