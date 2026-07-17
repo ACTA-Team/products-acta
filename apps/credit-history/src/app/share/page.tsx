@@ -17,7 +17,7 @@ import {
   CopyField,
   Badge,
 } from '@acta-products/ui';
-import { t } from '../../lib/i18n';
+import { useTranslations } from 'next-intl';
 import {
   ShieldCheck,
   Calendar,
@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 
 export default function SharePage() {
+  const t = useTranslations('share');
   const [credentials, setCredentials] = React.useState<CreditCredential[]>([]);
   const [profile, setProfile] = React.useState<CreditProfileSummary | null>(null);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
@@ -101,7 +102,7 @@ export default function SharePage() {
 
   const handleGenerateLink = () => {
     if (selectedIds.length === 0) {
-      alert(t('share.no_selection'));
+      alert(t('noSelection'));
       return;
     }
 
@@ -147,7 +148,7 @@ export default function SharePage() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center min-h-[500px] gap-4">
         <RefreshCw className="size-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground animate-pulse">Loading vault data...</p>
+        <p className="text-sm text-muted-foreground animate-pulse">{t('loadingVault')}</p>
       </div>
     );
   }
@@ -159,12 +160,12 @@ export default function SharePage() {
         <div className="flex flex-col gap-2">
           <div className="inline-flex items-center gap-2 text-primary text-sm font-semibold tracking-wide uppercase">
             <ShieldCheck className="size-4" />
-            ACTA Credit Vault
+            {t('vaultTitle')}
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-            {t('share.title')}
+            {t('title')}
           </h1>
-          <p className="text-muted-foreground text-base max-w-2xl">{t('share.subtitle')}</p>
+          <p className="text-muted-foreground text-base max-w-2xl">{t('subtitle')}</p>
         </div>
 
         {generatedLink ? (
@@ -175,11 +176,9 @@ export default function SharePage() {
                 <CheckCircle2 className="size-6" />
               </div>
               <CardTitle className="text-2xl text-emerald-800 dark:text-emerald-400">
-                {t('share.link_ready')}
+                {t('linkReady')}
               </CardTitle>
-              <CardDescription className="text-base max-w-xl">
-                {t('share.link_ready_desc')}
-              </CardDescription>
+              <CardDescription className="text-base max-w-xl">{t('linkReadyDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-6">
               <div className="p-4 bg-background border border-border rounded-xl shadow-xs">
@@ -188,28 +187,28 @@ export default function SharePage() {
 
               {/* Summary of what is shared */}
               <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-semibold text-foreground">Shared Details:</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t('sharedDetails')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
-                    <span className="text-muted-foreground mb-1">Holder</span>
+                    <span className="text-muted-foreground mb-1">{t('holder')}</span>
                     <span className="font-semibold">{profile?.holderName}</span>
                     <span className="font-mono text-[10px] text-muted-foreground mt-0.5 truncate">
                       {profile?.holderDid}
                     </span>
                   </div>
                   <div className="flex flex-col p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
-                    <span className="text-muted-foreground mb-1">Expiration</span>
+                    <span className="text-muted-foreground mb-1">{t('expiration')}</span>
                     <span className="font-semibold">
                       {generatedExpirationTime
                         ? new Date(generatedExpirationTime).toLocaleString()
-                        : t('verify.never_expires')}
+                        : t('exp.never')}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-2 mt-2">
                   <span className="text-xs text-muted-foreground font-medium">
-                    Included Credentials ({selectedIds.length}):
+                    {t('includedCredentials', { count: selectedIds.length })}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {credentials
@@ -231,7 +230,7 @@ export default function SharePage() {
               <Button asChild variant="default" className="w-full md:w-auto cursor-pointer">
                 <a href={generatedLink} target="_blank" rel="noopener noreferrer">
                   <FileText className="size-4 mr-2" />
-                  {t('share.preview_btn')}
+                  {t('previewBtn')}
                 </a>
               </Button>
               <Button
@@ -240,7 +239,7 @@ export default function SharePage() {
                 className="w-full md:w-auto cursor-pointer"
               >
                 <ArrowLeft className="size-4 mr-2" />
-                {t('share.back_btn')}
+                {t('backBtn')}
               </Button>
             </CardFooter>
           </Card>
@@ -252,8 +251,8 @@ export default function SharePage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                   <div>
-                    <CardTitle className="text-lg">{t('share.select_credentials')}</CardTitle>
-                    <CardDescription>{t('share.select_credentials_desc')}</CardDescription>
+                    <CardTitle className="text-lg">{t('selectCredentials')}</CardTitle>
+                    <CardDescription>{t('selectCredentialsDesc')}</CardDescription>
                   </div>
                   <Button
                     variant="ghost"
@@ -261,7 +260,7 @@ export default function SharePage() {
                     className="text-xs font-semibold hover:bg-muted cursor-pointer"
                     onClick={handleSelectAll}
                   >
-                    {selectedIds.length === credentials.length ? 'Deselect All' : 'Select All'}
+                    {selectedIds.length === credentials.length ? t('deselectAll') : t('selectAll')}
                   </Button>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3 max-h-[450px] overflow-y-auto pr-2">
@@ -293,11 +292,11 @@ export default function SharePage() {
                             <div className="flex items-center gap-1.5 shrink-0">
                               {isRevoked ? (
                                 <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
-                                  Revoked
+                                  {t('revoked')}
                                 </Badge>
                               ) : (
                                 <Badge variant="success" className="text-[10px] px-1.5 py-0">
-                                  Valid
+                                  {t('valid')}
                                 </Badge>
                               )}
                             </div>
@@ -307,12 +306,14 @@ export default function SharePage() {
                           </p>
                           <div className="flex items-center gap-4 text-[10px] text-muted-foreground mt-2 border-t border-border/40 pt-2 font-mono">
                             <span>
-                              Value:{' '}
+                              {t('value')}{' '}
                               <strong className="text-foreground font-sans font-medium">
                                 {cred.value}
                               </strong>
                             </span>
-                            <span className="truncate">Issuer: {cred.issuer}</span>
+                            <span className="truncate">
+                              {t('issuer')} {cred.issuer}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -328,19 +329,19 @@ export default function SharePage() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Calendar className="size-4 text-muted-foreground" />
-                    {t('share.expiration_options')}
+                    {t('expirationOptions')}
                   </CardTitle>
-                  <CardDescription>{t('share.expiration_options_desc')}</CardDescription>
+                  <CardDescription>{t('expirationOptionsDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col gap-4">
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { key: '1h', label: t('share.exp.1hour') },
-                      { key: '1d', label: t('share.exp.1day') },
-                      { key: '7d', label: t('share.exp.7days') },
-                      { key: '30d', label: t('share.exp.30days') },
-                      { key: 'custom', label: t('share.exp.custom') },
-                      { key: 'never', label: t('share.exp.never') },
+                      { key: '1h', label: t('exp.hour1') },
+                      { key: '1d', label: t('exp.day1') },
+                      { key: '7d', label: t('exp.days7') },
+                      { key: '30d', label: t('exp.days30') },
+                      { key: 'custom', label: t('exp.custom') },
+                      { key: 'never', label: t('exp.never') },
                     ].map((item) => (
                       <button
                         key={item.key}
@@ -363,7 +364,7 @@ export default function SharePage() {
                         htmlFor="custom-date"
                         className="text-xs font-medium text-muted-foreground"
                       >
-                        {t('share.custom_date_label')}
+                        {t('customDateLabel')}
                       </Label>
                       <Input
                         id="custom-date"
@@ -384,12 +385,12 @@ export default function SharePage() {
                     {isGenerating ? (
                       <>
                         <RefreshCw className="size-4 animate-spin mr-2" />
-                        {t('share.generating')}
+                        {t('generating')}
                       </>
                     ) : (
                       <>
                         <Share2 className="size-4 mr-2" />
-                        {t('share.generate_btn')}
+                        {t('generateBtn')}
                       </>
                     )}
                   </Button>
