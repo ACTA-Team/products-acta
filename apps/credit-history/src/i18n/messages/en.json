@@ -147,7 +147,9 @@
     "selectAll": "Select All",
     "value": "Value:",
     "issuer": "Issuer:",
-    "vaultTitle": "ACTA Credit Vault"
+    "vaultTitle": "ACTA Credit Vault",
+    "revoked": "Revoked",
+    "valid": "Valid"
   },
   "verify": {
     "title": "Verifiable presentation report",

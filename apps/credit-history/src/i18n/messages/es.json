@@ -147,7 +147,9 @@
     "selectAll": "Seleccionar Todo",
     "value": "Valor:",
     "issuer": "Emisor:",
-    "vaultTitle": "Bóveda de Crédito ACTA"
+    "vaultTitle": "Bóveda de Crédito ACTA",
+    "revoked": "Revocada",
+    "valid": "Vigente"
   },
   "verify": {
     "title": "Reporte de presentación verificable",
