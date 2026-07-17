@@ -54,11 +54,7 @@ export function VerificationBanner({
   return (
     <div
       data-slot="verification-banner"
-      className={cn(
-        'rounded-xl border shadow-md',
-        BANNER_STYLES[status],
-        className
-      )}
+      className={cn('rounded-xl border shadow-md', BANNER_STYLES[status], className)}
       {...props}
     >
       <div className="flex flex-col items-center gap-4 p-6 text-center md:flex-row md:text-left">
@@ -71,9 +67,7 @@ export function VerificationBanner({
           {icon ?? DEFAULT_ICONS[status]}
         </div>
         <div className="flex min-w-0 flex-col gap-1">
-          <h2 className={cn('text-xl font-bold tracking-tight', TITLE_STYLES[status])}>
-            {title}
-          </h2>
+          <h2 className={cn('text-xl font-bold tracking-tight', TITLE_STYLES[status])}>{title}</h2>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
       </div>

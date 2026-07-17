@@ -18,13 +18,7 @@ import {
   StatusBadge,
   type CredentialStatusKind,
 } from '@acta-products/ui';
-import {
-  AlertCircle,
-  ArrowLeft,
-  FileQuestion,
-  RefreshCw,
-  Share2,
-} from 'lucide-react';
+import { AlertCircle, ArrowLeft, FileQuestion, RefreshCw, Share2 } from 'lucide-react';
 import {
   categoryOf,
   detailClaimEntries,
@@ -266,7 +260,9 @@ function CredentialDetailContent({
             <dd className="text-sm font-medium text-foreground">{credential.issuer}</dd>
           </div>
           <div className="flex flex-col gap-1">
-            <dt className="sr-only">{t('item.issued', { date: new Date(credential.issueDate) })}</dt>
+            <dt className="sr-only">
+              {t('item.issued', { date: new Date(credential.issueDate) })}
+            </dt>
             <dd className="text-sm text-foreground">
               {t('item.issued', { date: new Date(credential.issueDate) })}
             </dd>

@@ -216,9 +216,7 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
               <div className="flex shrink-0 items-center gap-2 rounded-lg border border-border/50 bg-muted/40 px-3 py-1.5 font-mono text-xs text-muted-foreground">
                 <span>{t('expiration')}:</span>
                 <span className="font-semibold text-foreground">
-                  {state.expirationDate
-                    ? state.expirationDate.toLocaleString()
-                    : t('neverExpires')}
+                  {state.expirationDate ? state.expirationDate.toLocaleString() : t('neverExpires')}
                 </span>
               </div>
             </header>
