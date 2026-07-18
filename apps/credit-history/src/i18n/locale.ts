@@ -32,7 +32,7 @@ function matchAcceptLanguage(acceptLanguage: string | null): Locale {
 
 export function resolveLocale(
   cookieValue: string | undefined,
-  acceptLanguage: string | null,
+  acceptLanguage: string | null
 ): Locale {
   if (isLocale(cookieValue)) {
     return cookieValue;

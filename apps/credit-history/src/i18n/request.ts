@@ -7,7 +7,7 @@ export default getRequestConfig(async () => {
   const headerStore = await headers();
   const locale = resolveLocale(
     cookieStore.get(LOCALE_COOKIE_NAME)?.value,
-    headerStore.get('accept-language'),
+    headerStore.get('accept-language')
   );
 
   return {

@@ -27,7 +27,7 @@ export function LocaleSwitcher({ className, showLabel = false }: LocaleSwitcherP
 
   const activeIndex = Math.max(
     0,
-    localeOptions.findIndex((option) => option.value === locale),
+    localeOptions.findIndex((option) => option.value === locale)
   );
 
   function handleSelect(nextLocale: Locale) {
@@ -48,7 +48,7 @@ export function LocaleSwitcher({ className, showLabel = false }: LocaleSwitcherP
       className={cn(
         'relative inline-grid h-7 shrink-0 grid-cols-2 rounded-[min(var(--radius-md),12px)] border border-border bg-muted/50 p-0.5 shadow-xs',
         'ring-1 ring-border/40 dark:border-input dark:bg-input/40',
-        isPending && 'pointer-events-none opacity-60',
+        isPending && 'pointer-events-none opacity-60'
       )}
     >
       <span
@@ -57,7 +57,7 @@ export function LocaleSwitcher({ className, showLabel = false }: LocaleSwitcherP
           'pointer-events-none absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-[min(var(--radius-md),10px)]',
           'bg-background shadow-sm ring-1 ring-border/60 transition-[left] duration-200 ease-out',
           'dark:bg-background/90 dark:ring-border/40',
-          activeIndex === 0 ? 'left-0.5' : 'left-[calc(50%+1px)]',
+          activeIndex === 0 ? 'left-0.5' : 'left-[calc(50%+1px)]'
         )}
       />
 
@@ -76,7 +76,7 @@ export function LocaleSwitcher({ className, showLabel = false }: LocaleSwitcherP
               'font-mono text-[0.6875rem] font-semibold tracking-[0.08em] transition-colors duration-200',
               'rounded-[min(var(--radius-md),10px)] outline-none',
               'focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
-              isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+              isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {code}
@@ -103,7 +103,7 @@ export function LocaleSwitcher({ className, showLabel = false }: LocaleSwitcherP
     <div
       className={cn(
         'inline-flex items-center gap-1.5 rounded-[min(var(--radius-md),12px)] border border-transparent pr-0.5',
-        className,
+        className
       )}
     >
       <Globe
