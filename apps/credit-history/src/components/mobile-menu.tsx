@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { LocaleSwitcher } from './locale-switcher';
 
 interface MobileMenuProps {
   links: { href: string; label: string }[];
@@ -65,6 +66,9 @@ export function MobileMenu({ links }: MobileMenuProps) {
                 {link.label}
               </Link>
             ))}
+            <div className="border-t border-border/60 pt-3 mt-2">
+              <LocaleSwitcher showLabel />
+            </div>
           </nav>
         </div>
       )}
