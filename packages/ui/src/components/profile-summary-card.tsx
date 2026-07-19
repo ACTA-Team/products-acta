@@ -77,7 +77,7 @@ export function ProfileSummaryCard({
           {stats.map((stat) => (
             <div key={stat.label} className="rounded-lg border border-border/50 bg-muted/30 p-3">
               <div className="text-2xl font-semibold tabular-nums">{stat.value}</div>
-              <div className="text-xs text-muted-foreground">{stat.label}</div>
+              <div className="text-xs text-muted-foreground break-words">{stat.label}</div>
             </div>
           ))}
         </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Space_Grotesk, Inter, JetBrains_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, getTranslations } from 'next-intl/server';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { ActaProvider } from '@/providers/acta-provider';
@@ -39,15 +39,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
   const messages = await getMessages();
 
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`h-full antialiased ${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable}`}
     >
       <body className="min-h-full flex flex-col">
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           {/*
            * ActaProvider: mounts ActaConfig as low as possible — inside
            * NextIntlClientProvider but outside the page content, so only

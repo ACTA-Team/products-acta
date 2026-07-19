@@ -8,7 +8,10 @@
     "credentials": "My credentials",
     "share": "Share",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "language": "Language",
+    "localeEn": "English",
+    "localeEs": "Español"
   },
   "footer": {
     "tagline": "Portable credit history built on ACTA verifiable credentials.",

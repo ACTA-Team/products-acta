@@ -161,9 +161,15 @@ export function CredentialsView() {
                 title={t('summary.title')}
                 disclaimer={t('summary.disclaimer')}
                 stats={[
-                  { label: t('summary.stats.total'), value: String(state.credentials.length) },
-                  { label: t('summary.stats.valid'), value: String(summary.counts.valid) },
-                  { label: t('summary.stats.revoked'), value: String(summary.counts.revoked) },
+                  {
+                    label: t('summary.stats.total'),
+                    value: format.number(state.credentials.length),
+                  },
+                  { label: t('summary.stats.valid'), value: format.number(summary.counts.valid) },
+                  {
+                    label: t('summary.stats.revoked'),
+                    value: format.number(summary.counts.revoked),
+                  },
                   {
                     label: t('summary.stats.historySince'),
                     value: summary.oldestIssuedAt

@@ -1,28 +1,31 @@
 {
   "meta": {
-    "title": "Credit History — ACTA",
-    "description": "Portable credit history for financial inclusion, built on ACTA verifiable credentials."
+    "title": "Historial crediticio — ACTA",
+    "description": "Historial crediticio portable para inclusión financiera, basado en credenciales verificables de ACTA."
   },
   "nav": {
     "home": "Inicio",
     "credentials": "Mis credenciales",
     "share": "Compartir",
     "openMenu": "Abrir menú",
-    "closeMenu": "Cerrar menú"
+    "closeMenu": "Cerrar menú",
+    "language": "Idioma",
+    "localeEn": "English",
+    "localeEs": "Español"
   },
   "footer": {
     "tagline": "Historial crediticio portable sobre credenciales verificables de ACTA.",
     "rights": "Todos los derechos reservados."
   },
   "common": {
-    "appName": "Credit History",
+    "appName": "Historial crediticio",
     "comingSoon": "Próximamente",
     "yes": "Sí",
     "no": "No"
   },
   "home": {
-    "title": "Credit History",
-    "description": "Historial crediticio portable sobre credenciales verificables de ACTA.",
+    "title": "Historial crediticio",
+    "description": "Historial crediticio portable sobre credenciales verificables de ACTA. Esqueleto del producto — aún sin implementar.",
     "protocol": "Protocolo ACTA",
     "subtitle": "Posee, administra y comparte tu reputación crediticia verificable. Porta tu historial financiero de forma segura sin depender de agencias de crédito centralizadas.",
     "shareTitle": "Generar Presentación",

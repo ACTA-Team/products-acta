@@ -17,7 +17,7 @@ import {
   CopyField,
   Badge,
 } from '@acta-products/ui';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import {
   ShieldCheck,
   Calendar,
@@ -30,6 +30,7 @@ import {
 
 export default function SharePage() {
   const t = useTranslations('share');
+  const format = useFormatter();
   const [credentials, setCredentials] = React.useState<CreditCredential[]>([]);
   const [profile, setProfile] = React.useState<CreditProfileSummary | null>(null);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
@@ -198,9 +199,12 @@ export default function SharePage() {
                   </div>
                   <div className="flex flex-col p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
                     <span className="text-muted-foreground mb-1">{t('expiration')}</span>
-                    <span className="font-semibold">
+                    <span className="font-semibold break-words">
                       {generatedExpirationTime
-                        ? new Date(generatedExpirationTime).toLocaleString()
+                        ? format.dateTime(new Date(generatedExpirationTime), {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          })
                         : t('exp.never')}
                     </span>
                   </div>
@@ -227,18 +231,22 @@ export default function SharePage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col md:flex-row gap-3 border-t border-border/50 pt-6">
-              <Button asChild variant="default" className="w-full md:w-auto cursor-pointer">
+              <Button
+                asChild
+                variant="default"
+                className="h-auto w-full whitespace-normal py-2.5 text-center text-sm md:w-auto cursor-pointer"
+              >
                 <a href={generatedLink} target="_blank" rel="noopener noreferrer">
-                  <FileText className="size-4 mr-2" />
+                  <FileText className="size-4 mr-2 shrink-0" />
                   {t('previewBtn')}
                 </a>
               </Button>
               <Button
                 variant="outline"
                 onClick={resetForm}
-                className="w-full md:w-auto cursor-pointer"
+                className="h-auto w-full whitespace-normal py-2.5 text-center text-sm md:w-auto cursor-pointer"
               >
-                <ArrowLeft className="size-4 mr-2" />
+                <ArrowLeft className="size-4 mr-2 shrink-0" />
                 {t('backBtn')}
               </Button>
             </CardFooter>
@@ -347,7 +355,7 @@ export default function SharePage() {
                         key={item.key}
                         type="button"
                         onClick={() => setExpPreset(item.key as typeof expPreset)}
-                        className={`py-2 px-3 text-xs font-semibold rounded-lg border text-center transition-all cursor-pointer ${
+                        className={`py-2 px-3 text-xs font-semibold rounded-lg border text-center whitespace-normal leading-snug transition-all cursor-pointer ${
                           expPreset === item.key
                             ? 'border-primary bg-primary text-primary-foreground font-bold shadow-xs'
                             : 'border-border bg-background text-foreground hover:bg-muted'
@@ -380,7 +388,7 @@ export default function SharePage() {
                   <Button
                     onClick={handleGenerateLink}
                     disabled={selectedIds.length === 0 || isGenerating}
-                    className="w-full h-10 font-semibold cursor-pointer"
+                    className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center text-sm font-semibold cursor-pointer"
                   >
                     {isGenerating ? (
                       <>

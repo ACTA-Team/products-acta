@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { NavLink } from '@acta-products/ui/components/nav-link';
 import { MobileMenu } from './mobile-menu';
+import { LocaleSwitcher } from './locale-switcher';
 import { WalletButton } from './wallet-button';
 
 export async function Header() {
@@ -36,7 +37,8 @@ export async function Header() {
         </nav>
 
         {/* WalletButton is a Client Component — safe inside this Server Component */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <LocaleSwitcher className="hidden sm:inline-flex" />
           <WalletButton />
           <MobileMenu links={navLinks} />
         </div>

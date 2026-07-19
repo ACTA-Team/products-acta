@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { getCredentialSource } from '@acta-products/acta';
 import type { CreditCredential, CreditProfileSummary } from '@acta-products/acta/types';
 import {
@@ -81,6 +81,7 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
   const t = useTranslations('verify');
   const tCredentials = useTranslations('credentials');
   const tCommon = useTranslations('common');
+  const format = useFormatter();
   const statusLabel = useStatusLabel();
 
   const [state, setState] = React.useState<LoadState>({ phase: 'loading' });
@@ -213,10 +214,15 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
                 </h1>
                 <p className="text-xs text-muted-foreground">{t('subtitle')}</p>
               </div>
-              <div className="flex shrink-0 items-center gap-2 rounded-lg border border-border/50 bg-muted/40 px-3 py-1.5 font-mono text-xs text-muted-foreground">
-                <span>{t('expiration')}:</span>
-                <span className="font-semibold text-foreground">
-                  {state.expirationDate ? state.expirationDate.toLocaleString() : t('neverExpires')}
+              <div className="flex w-full max-w-full shrink flex-col gap-1 rounded-lg border border-border/50 bg-muted/40 px-3 py-1.5 font-mono text-xs text-muted-foreground sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+                <span className="shrink-0">{t('expiration')}:</span>
+                <span className="min-w-0 break-words font-semibold text-foreground">
+                  {state.expirationDate
+                    ? format.dateTime(state.expirationDate, {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      })
+                    : t('neverExpires')}
                 </span>
               </div>
             </header>
