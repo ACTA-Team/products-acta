@@ -1,6 +1,5 @@
-import type { CreditCredential } from '@acta-products/acta/types';
+import type { CreditCategory, CreditCredential } from '@acta-products/acta/types';
 import type { CredentialStatusKind } from '@acta-products/ui';
-import type { CreditCategory } from '@/types';
 
 /**
  * View helpers for the holder credential list.
