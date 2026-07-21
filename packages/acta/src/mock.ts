@@ -1,4 +1,4 @@
-import { didStellar, StellarNetwork } from './did';
+import { didStellar } from './did';
 import type {
   CreditCredential,
   CreditProfileSummary,
@@ -8,8 +8,8 @@ import type {
 // Re-export the interface so consumers can import it from this package too
 export type { CreditCredential, CreditProfileSummary, CreditCredentialSource };
 
-const TESTNET: StellarNetwork = 'testnet';
-const MAINNET: StellarNetwork = 'mainnet';
+const TESTNET = 'testnet';
+const MAINNET = 'mainnet';
 
 export const FIXTURES: CreditCredential[] = [
   // ── INCOME ──────────────────────────────────────────────────────────────
