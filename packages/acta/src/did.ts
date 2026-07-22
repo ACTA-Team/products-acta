@@ -1,8 +1,22 @@
-export type StellarNetwork = 'testnet' | 'mainnet';
+/**
+ * @fileoverview DID helpers for the did:stellar method.
+ *
+ * The ACTA DID method is did:stellar:{network}:{G…address}.
+ * All previous did:pkh:stellar references have been removed.
+ */
+
+/** Stellar networks ACTA currently supports for DID resolution. */
+export type StellarNetwork = 'mainnet' | 'testnet';
 
 export const DID_STELLAR_PREFIX = 'did:stellar';
 
-/** Builds the default ACTA DID for a Stellar account, matching acta-api. */
+/**
+ * Construct a did:stellar DID.
+ *
+ * @param network - Stellar network identifier.
+ * @param address - The holder's Stellar public key (G…).
+ * @returns A fully-qualified DID string, e.g. 'did:stellar:testnet:GABC…'.
+ */
 export function didStellar(network: StellarNetwork, address: string): string {
   return `${DID_STELLAR_PREFIX}:${network}:${address}`;
 }

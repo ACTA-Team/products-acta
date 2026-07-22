@@ -1,4 +1,5 @@
-import { didStellar, StellarNetwork } from './did';
+import { didStellar } from './did';
+import { ActaCredentialSource } from './acta-credential-source';
 import type {
   CreditCredential,
   CreditProfileSummary,
@@ -8,8 +9,8 @@ import type {
 // Re-export the interface so consumers can import it from this package too
 export type { CreditCredential, CreditProfileSummary, CreditCredentialSource };
 
-const TESTNET: StellarNetwork = 'testnet';
-const MAINNET: StellarNetwork = 'mainnet';
+const TESTNET = 'testnet';
+const MAINNET = 'mainnet';
 
 export const FIXTURES: CreditCredential[] = [
   // ── INCOME ──────────────────────────────────────────────────────────────
@@ -147,7 +148,6 @@ function deriveProfileSummary(credentials: CreditCredential[]): CreditProfileSum
     (c) => c.type === 'MicrofinanceRepayment' || c.type === 'DeFiLoan'
   );
 
-  // averageScore: average numeric `value` across valid credentials that carry one
   const scores = active
     .map((c) => (typeof c.value === 'number' ? c.value : null))
     .filter((v): v is number => v !== null);
@@ -172,8 +172,11 @@ export type MockMode = 'normal' | 'empty' | 'error';
 
 export interface MockSourceOptions {
   mode?: MockMode;
-
   delayMs?: number;
+  /** Stellar G... address of the connected holder — required for the real source. */
+  owner?: string;
+  /** Full did:stellar for the holder, forwarded to ActaCredentialSource when present. */
+  holderDid?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -233,14 +236,17 @@ function resolveMockMode(): MockMode {
 export function getCredentialSource(options?: MockSourceOptions): CreditCredentialSource {
   const dataSource = process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock';
 
-  if (dataSource !== 'mock') {
-    // SEAM: replace this block with ActaCredentialSource when ready.
-    // Unrecognised values fall back to mock with a console warning.
+  if (dataSource === 'real' && options?.owner) {
+    return new ActaCredentialSource({ owner: options.owner, holderDid: options.holderDid });
+  }
+
+  if (dataSource !== 'mock' && dataSource !== 'real') {
     console.warn(
-      `[getCredentialSource] Unrecognised NEXT_PUBLIC_DATA_SOURCE="${dataSource}". ` +
-        'Falling back to mock. Set to "real" when ActaCredentialSource is available.'
+      `[getCredentialSource] Unrecognised NEXT_PUBLIC_DATA_SOURCE="${dataSource}". Falling back to mock.`
     );
   }
+  // dataSource === 'real' but no owner (e.g. share/verify pages, or session
+  // not yet connected) intentionally falls through to mock — see #36 PR notes.
 
   const mode = options?.mode ?? resolveMockMode();
   const delayMs = options?.delayMs ?? 120;

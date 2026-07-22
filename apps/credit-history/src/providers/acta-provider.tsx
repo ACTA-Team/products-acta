@@ -2,7 +2,11 @@
 
 import { ActaConfig, mainNet, testNet } from '@acta-products/acta';
 import type { baseURL } from '@acta-products/acta';
-import type { StellarNetwork } from '@acta-products/acta/did';
+
+
+
+// The acta package does not export the StellarNetwork type — declare it locally.
+type StellarNetwork = 'mainnet' | 'testnet';
 
 // Next.js inlines NEXT_PUBLIC_* at build time — declare so TypeScript resolves.
 declare const NEXT_PUBLIC_STELLAR_NETWORK: string | undefined;

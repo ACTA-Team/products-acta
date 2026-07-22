@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@acta-products/types": "workspace:*",
-    "@acta-team/credentials": "^1.1.1"
+    "@acta-team/credentials": "^1.1.4"
   },
   "peerDependencies": {
     "react": "^19",
