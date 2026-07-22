@@ -1,0 +1,199 @@
+{
+  "meta": {
+    "title": "Historial crediticio — ACTA",
+    "description": "Historial crediticio portable para inclusión financiera, basado en credenciales verificables de ACTA."
+  },
+  "nav": {
+    "home": "Inicio",
+    "credentials": "Mis credenciales",
+    "share": "Compartir",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "language": "Idioma",
+    "localeEn": "English",
+    "localeEs": "Español"
+  },
+  "footer": {
+    "tagline": "Historial crediticio portable sobre credenciales verificables de ACTA.",
+    "rights": "Todos los derechos reservados."
+  },
+  "common": {
+    "appName": "Historial crediticio",
+    "comingSoon": "Próximamente",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "home": {
+    "title": "Historial crediticio",
+    "description": "Historial crediticio portable sobre credenciales verificables de ACTA. Esqueleto del producto — aún sin implementar.",
+    "protocol": "Protocolo ACTA",
+    "subtitle": "Posee, administra y comparte tu reputación crediticia verificable. Porta tu historial financiero de forma segura sin depender de agencias de crédito centralizadas.",
+    "shareTitle": "Generar Presentación",
+    "shareDesc": "Selecciona credenciales de crédito y crea un enlace seguro y verificable para compartir con prestamistas.",
+    "shareFeatures": "Soporta fechas de expiración personalizadas y verificaciones dinámicas en cadena.",
+    "ready": "Listo",
+    "getStarted": "Comenzar",
+    "vaultTitle": "Mi Bóveda de Crédito",
+    "vaultDesc": "Visualiza tus puntuaciones, historial de pagos y verifica credenciales de identidad en tu bóveda personal.",
+    "vaultFeatures": "Interacciones directas con la bóveda criptográfica y resolución en tiempo real de did:stellar.",
+    "unavailable": "No disponible",
+    "identityMethod": "Método de Identidad:",
+    "techStack": "Construido con Next.js 16, React 19 y Tailwind CSS v4."
+  },
+  "credentials": {
+    "title": "Mis Credenciales",
+    "description": "Tus credenciales verificables aparecerán aquí.",
+    "subtitle": "Tus credenciales crediticias, en tu poder y listas para compartir.",
+    "summary": {
+      "title": "Resumen de tu perfil crediticio",
+      "disclaimer": "Una visión informativa de tus credenciales verificables. No es una puntuación crediticia ni una evaluación de riesgo.",
+      "stats": {
+        "total": "Credenciales totales",
+        "valid": "Vigentes",
+        "revoked": "Revocadas",
+        "historySince": "Historial desde"
+      },
+      "categoriesTitle": "Por categoría",
+      "timeline": {
+        "today": "Hoy",
+        "caption": "Una vista general de tu historial crediticio verificable."
+      }
+    },
+    "results": "{count, plural, =0 {Sin credenciales} one {# credencial} other {# credenciales}}",
+    "filters": {
+      "category": "Categoría",
+      "status": "Estado",
+      "all": "Todas",
+      "clear": "Limpiar filtros"
+    },
+    "category": {
+      "INCOME": "Ingresos",
+      "EMPLOYMENT": "Empleo",
+      "REPAYMENT_HISTORY": "Historial de pagos",
+      "LOAN": "Préstamo",
+      "UTILITY": "Servicios"
+    },
+    "status": {
+      "valid": "Vigente",
+      "revoked": "Revocada el {date, date, medium}",
+      "revokedNoDate": "Revocada",
+      "invalid": "Inválida"
+    },
+    "item": {
+      "issuer": "Emisor",
+      "issued": "Emitida el {date, date, medium}",
+      "viewDetail": "Ver detalles"
+    },
+    "loading": "Cargando tus credenciales…",
+    "empty": {
+      "title": "Aún no tienes credenciales",
+      "description": "Cuando los emisores te otorguen credenciales crediticias, aparecerán aquí.",
+      "connectTitle": "Conecta tu billetera",
+      "connectDescription": "Conecta tu billetera Stellar para acceder a tus credenciales."
+    },
+    "emptyFiltered": {
+      "title": "Ninguna credencial coincide con estos filtros",
+      "description": "Prueba a limpiar los filtros para ver todas tus credenciales."
+    },
+    "error": {
+      "title": "No se pudieron cargar tus credenciales",
+      "description": "Algo salió mal al leer tu bóveda. Inténtalo de nuevo.",
+      "retry": "Reintentar"
+    },
+    "detail": {
+      "back": "Volver a credenciales",
+      "share": "Compartir",
+      "issuerDid": "DID del emisor",
+      "claims": "Datos verificados",
+      "loadingDetail": "Cargando credencial…",
+      "notFound": {
+        "title": "Credencial no encontrada",
+        "description": "Esta credencial no existe o ya no está disponible en tu bóveda."
+      },
+      "error": {
+        "title": "No se pudo cargar esta credencial",
+        "description": "Algo salió mal al leer esta credencial. Inténtalo de nuevo.",
+        "retry": "Reintentar"
+      }
+    }
+  },
+  "share": {
+    "title": "Compartir Presentación",
+    "subtitle": "Selecciona credenciales para generar un enlace de presentación seguro para prestamistas.",
+    "selectCredentials": "Seleccionar Credenciales",
+    "selectCredentialsDesc": "Solo los elementos seleccionados serán codificados y compartidos en la presentación.",
+    "expirationOptions": "Expiración de la Presentación",
+    "expirationOptionsDesc": "Establece cuánto tiempo permanecerá activo el enlace de verificación generado.",
+    "exp": {
+      "hour1": "1 Hora",
+      "day1": "1 Día",
+      "days7": "7 Días",
+      "days30": "30 Días",
+      "custom": "Expiración Personalizada",
+      "never": "Sin Expiración"
+    },
+    "generateBtn": "Generar Enlace para Compartir",
+    "generating": "Generando Enlace...",
+    "linkReady": "Enlace para Compartir Generado",
+    "linkReadyDesc": "Proporciona este enlace a los prestamistas. Ellos pueden verificar tus credenciales sin depender de intermediarios centrales.",
+    "copySuccess": "¡Copiado al portapapeles!",
+    "previewBtn": "Vista Previa del Reporte de Verificación",
+    "backBtn": "Crear Nueva Presentación",
+    "noSelection": "Por favor selecciona al menos una credencial para generar una presentación para compartir.",
+    "customDateLabel": "Elige la Fecha y Hora de Expiración Personalizada",
+    "loadingVault": "Cargando datos de la bóveda...",
+    "sharedDetails": "Detalles Compartidos:",
+    "holder": "Titular",
+    "expiration": "Expiración",
+    "includedCredentials": "Credenciales Incluidas ({count})",
+    "deselectAll": "Deseleccionar Todo",
+    "selectAll": "Seleccionar Todo",
+    "value": "Valor:",
+    "issuer": "Emisor:",
+    "vaultTitle": "Bóveda de Crédito ACTA",
+    "revoked": "Revocada",
+    "valid": "Vigente"
+  },
+  "verify": {
+    "title": "Reporte de presentación verificable",
+    "subtitle": "Verificado criptográficamente vía ACTA en la red Stellar",
+    "loading": "Ejecutando verificación criptográfica…",
+    "holderInfo": "Datos del titular",
+    "holderName": "Nombre del titular",
+    "holderDid": "DID del titular",
+    "expiration": "Expira",
+    "neverExpires": "Sin expiración",
+    "expiredAt": "Expiró el",
+    "credentialsIncluded": "Credenciales verificables incluidas",
+    "claims": "Datos verificados",
+    "backToApp": "Ir al panel de billetera",
+    "banner": {
+      "valid": {
+        "title": "Verificada y vigente",
+        "description": "Esta presentación es criptográficamente auténtica, coincide con el titular y está vigente."
+      },
+      "revoked": {
+        "title": "Presentación revocada",
+        "description": "Esta presentación incluye una o más credenciales revocadas por su emisor."
+      },
+      "invalid": {
+        "title": "Presentación inválida o expirada",
+        "description": "Este enlace de verificación expiró, está malformado o fue invalidado."
+      }
+    },
+    "invalid": {
+      "title": "Falló la verificación de la presentación",
+      "description": "El token de verificación no pudo descifrarse, decodificarse o validarse. Solicita un nuevo enlace al titular de las credenciales.",
+      "expiredDescription": "Este enlace de verificación expiró el {date, date, medium} a las {date, time, short}. Solicita un nuevo enlace al titular de las credenciales."
+    }
+  },
+  "session": {
+    "connect": "Conectar billetera",
+    "connecting": "Conectando…",
+    "disconnect": "Desconectar",
+    "connectedAs": "Conectado como",
+    "notConnected": "Sin billetera conectada",
+    "connectCta": "Conecta tu billetera Stellar para acceder a tus credenciales.",
+    "connectButton": "Conectar billetera"
+  }
+}

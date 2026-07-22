@@ -1,0 +1,4 @@
+{
+  "extends": "@acta-products/config/typescript/base",
+  "include": ["src"]
+}

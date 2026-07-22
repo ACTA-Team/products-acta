@@ -2,7 +2,11 @@
 
 Mark with an `x` all the checkboxes that apply (like `[x]`)
 
-- [ ] Closes #
+> ⚠️ **Required:** Fill in the issue number below. This is how
+> platforms tracks your contribution and releases your reward.
+
+Closes #<!-- issue number here, e.g: Closes #42 -->
+
 - [ ] Added tests (if necessary)
 - [ ] Run tests
 - [ ] Run formatting
@@ -20,17 +24,26 @@ Mark with an `x` all the checkboxes that apply (like `[x]`)
 
 ---
 
-## 📝 Changes description
+## 📝 Changes Description
+
+<!--
+Describe what you changed and why. Be specific enough for the maintainer
+to understand the scope without reading all the code.
+-->
 
 ---
 
-## 📸 Evidence (A Loom/Cap video is required as evidence, we WON'T merge if there's no proof)
+## 📸 Evidence
+
+<!--
+A Loom or screen recording is REQUIRED. We WON'T merge without proof.
+This is also what GrantFox maintainers use to verify work before releasing the reward.
+
+Paste your video link here 👇
+-->
 
 ---
 
-## ⏰ Time spent breakdown
-
----
 
 ## 🌌 Comments
 

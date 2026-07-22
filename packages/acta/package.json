@@ -1,0 +1,33 @@
+{
+  "name": "@acta-products/acta",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Thin integration layer over @acta-team/credentials. Products consume ACTA exclusively through this package.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./did": "./src/did.ts",
+    "./hooks": "./src/hooks.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@acta-products/types": "workspace:*",
+    "@acta-team/credentials": "^1.1.1"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@acta-products/config": "workspace:*",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  }
+}

@@ -1,43 +1,32 @@
 # ACTA Products
 
-A Next.js repository that showcases **products in the ACTA ecosystem** and explains, for each one, the problems they face and how ACTA solves them. It acts as a living catalog of use cases, pain points, and the ACTA-powered solutions that address them.
+Monorepo hosting the products built on top of [ACTA](https://github.com/ACTA-Team) —
+trust-minimized Verifiable Credentials on Stellar/Soroban.
 
 ## What's in this repo
 
-- `src/` — Next.js App Router pages and components that render the products catalog and per-product case studies.
-- `public/` — Static assets (logos, screenshots, diagrams).
-- Next.js 16 + React 19 + Tailwind CSS 4 setup.
+- `apps/web` — products catalog / landing.
+- `apps/credit-history` — portable credit history / financial inclusion product (skeleton).
+- `packages/ui` — shared React components (Tailwind v4).
+- `packages/acta` — thin integration layer over `@acta-team/credentials`.
+- `packages/config` — shared tsconfig / eslint presets.
+- `packages/types` — shared TypeScript types.
 
-## For developers: fork & clone
-
-If you plan to contribute, first **fork** this repository from GitHub into your own account, then clone your fork locally:
-
-```bash
-git clone https://github.com/<your-username>/acta-products.git
-cd acta-products
-git remote add upstream https://github.com/acta-org/acta-products.git
-```
-
-If you only want to run the project locally (no contributions), you can clone it directly:
-
-```bash
-git clone https://github.com/acta-org/acta-products.git
-cd acta-products
-```
+Stack: Next.js 16, React 19, Tailwind CSS v4, TypeScript 5 · pnpm workspaces + Turborepo ·
+Node >= 22.
 
 ## Run locally
 
 ```bash
-npm install
-npm run dev
+corepack enable   # once, to get the pinned pnpm
+pnpm install
+pnpm dev          # web on :3000, credit-history on :3001
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the site.
+## Scripts (root, via turbo)
 
-## Scripts
-
-- `npm run dev` — start the dev server
-- `npm run build` — production build
-- `npm run start` — run the production build
-- `npm run lint` — lint the codebase
-- `npm run format` — format with Prettier
+- `pnpm dev` — start all apps in dev mode
+- `pnpm build` — production build of every app/package
+- `pnpm lint` — lint everything
+- `pnpm typecheck` — `tsc --noEmit` everywhere
+- `pnpm format` — Prettier over the repo
