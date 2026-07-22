@@ -35,10 +35,8 @@ export interface SignTransactionOpts {
 
 export interface WalletConnector {
   connect(): Promise<{ address: string }>;
-  signTransaction?: (
-    xdr: string,
-    opts: SignTransactionOpts,
-  ) => Promise<{ signedXdr: string }>;
+  signTransaction?: (xdr: string, opts: SignTransactionOpts) => Promise<{ signedXdr: string }>;
+  disconnect(): Promise<void>;
 }
 
 // ── Network helpers ───────────────────────────────────────────────────────────
@@ -62,7 +60,7 @@ export class WalletNotInstalledError extends Error {
   constructor(walletName = 'wallet') {
     super(
       `${walletName} is not installed. ` +
-        'Please install it from the browser extension store and try again.',
+        'Please install it from the browser extension store and try again.'
     );
     this.name = 'WalletNotInstalledError';
   }
@@ -77,15 +75,18 @@ export class UserRejectedError extends Error {
 
 // ── MockWalletConnector ───────────────────────────────────────────────────────
 
-const MOCK_ADDRESS =
-  'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
+const MOCK_ADDRESS = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
 
 class MockWalletConnector implements WalletConnector {
   async connect(): Promise<{ address: string }> {
     return { address: MOCK_ADDRESS };
   }
 
-   /** Returns the input XDR unchanged — suitable only for dev/CI. */
+  async disconnect(): Promise<void> {
+    // Mock implementation - no-op
+  }
+
+  /** Returns the input XDR unchanged — suitable only for dev/CI. */
   async signTransaction(xdr: string): Promise<{ signedXdr: string }> {
     return { signedXdr: xdr };
   }
@@ -113,6 +114,9 @@ class RealWalletConnector implements WalletConnector {
       StellarWalletsKit.setNetwork(this.networkPassphrase);
     }
   }
+  disconnect(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 
   async connect(): Promise<{ address: string }> {
     try {
@@ -123,10 +127,7 @@ class RealWalletConnector implements WalletConnector {
     }
   }
 
-  async signTransaction(
-    xdr: string,
-    opts: SignTransactionOpts,
-  ): Promise<{ signedXdr: string }> {
+  async signTransaction(xdr: string, opts: SignTransactionOpts): Promise<{ signedXdr: string }> {
     try {
       const { signedTxXdr } = await StellarWalletsKit.signTransaction(xdr, {
         networkPassphrase: opts.networkPassphrase ?? this.networkPassphrase,
@@ -139,10 +140,7 @@ class RealWalletConnector implements WalletConnector {
   }
 
   private classifyError(err: unknown): Error {
-    if (
-      err instanceof WalletNotInstalledError ||
-      err instanceof UserRejectedError
-    ) {
+    if (err instanceof WalletNotInstalledError || err instanceof UserRejectedError) {
       return err;
     }
 
