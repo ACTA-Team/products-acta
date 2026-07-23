@@ -4,21 +4,30 @@ import type { CreditCredential, CreditProfileSummary } from '@acta-products/acta
 import { buildPresentation } from '@acta-products/acta/presentation';
 import { renderWithIntl } from '@/test/render-with-intl';
 
-const { listCredentials, getProfileSummary, resolvePresentationRef } = vi.hoisted(() => ({
-  listCredentials: vi.fn(),
+const { getCredential, getProfileSummary, resolvePresentationRef } = vi.hoisted(() => ({
+  getCredential: vi.fn(),
   getProfileSummary: vi.fn(),
   resolvePresentationRef: vi.fn(),
 }));
 
 vi.mock('@acta-products/ui', () => import('@/test/ui-mock'));
 
-vi.mock('@acta-products/acta', () => ({
-  getCredentialSource: () => ({ listCredentials, getProfileSummary }),
-}));
+vi.mock('@acta-products/acta', async () => {
+  // Keep the real parseDidStellar so the view derives the owner as in production;
+  // only the SDK client and credential source are stubbed.
+  const actual = await vi.importActual<typeof import('@acta-products/acta')>('@acta-products/acta');
+  return {
+    parseDidStellar: actual.parseDidStellar,
+    useActaClient: () => ({}),
+    getCredentialSource: () => ({ getCredential, getProfileSummary }),
+  };
+});
 
 vi.mock('@/lib/presentation-link', () => ({ resolvePresentationRef }));
 
 import { PublicVerificationView } from './public-verification-view';
+
+const HOLDER = 'did:stellar:testnet:GHOLDERVAULT111222333444555ABCDEF111222333444555ABCDEF11';
 
 const CREDENTIAL: CreditCredential = {
   id: 'cred-income',
@@ -34,15 +43,22 @@ const CREDENTIAL: CreditCredential = {
 };
 
 const PROFILE: CreditProfileSummary = {
-  holderDid: 'did:stellar:testnet:GHOLDER',
+  holderDid: HOLDER,
   holderName: 'Alex Mercer',
   activeCredentialsCount: 1,
 };
 
 const REF = 'a'.repeat(43);
 
+/** Resolve the mock source's getCredential by id, mirroring vault-by-id lookup. */
+function credentialsById(...credentials: CreditCredential[]) {
+  const byId = new Map(credentials.map((c) => [c.id, c]));
+  getCredential.mockImplementation(async (id: string) => byId.get(id) ?? null);
+}
+
 beforeEach(() => {
-  listCredentials.mockReset().mockResolvedValue([CREDENTIAL]);
+  getCredential.mockReset();
+  credentialsById(CREDENTIAL);
   getProfileSummary.mockReset().mockResolvedValue(PROFILE);
   resolvePresentationRef.mockReset();
 });
@@ -77,7 +93,7 @@ describe('PublicVerificationView', () => {
     resolvePresentationRef.mockResolvedValue({
       status: 'ok',
       presentation: buildPresentation({
-        holder: 'did:stellar:testnet:GHOLDER',
+        holder: HOLDER,
         credentialIds: ['cred-income'],
         expiresAt: Date.now() + 3_600_000,
       }),
@@ -88,6 +104,57 @@ describe('PublicVerificationView', () => {
     expect(await screen.findByText('Verifiable presentation report')).toBeInTheDocument();
     expect(screen.getByText('Anchor Payroll Income')).toBeInTheDocument();
     expect(screen.getByText('Alex Mercer')).toBeInTheDocument();
+  });
+
+  it('verifies each shared credential by id against the vault', async () => {
+    resolvePresentationRef.mockResolvedValue({
+      status: 'ok',
+      presentation: buildPresentation({
+        holder: HOLDER,
+        credentialIds: ['cred-income'],
+        expiresAt: null,
+      }),
+    });
+
+    renderWithIntl(<PublicVerificationView token={REF} />);
+
+    await screen.findByText('Verifiable presentation report');
+    // The owner (G… address) parsed from the holder DID drives the vault read.
+    expect(getCredential).toHaveBeenCalledWith('cred-income');
+  });
+
+  it('reflects a revoked on-chain status in the overall banner', async () => {
+    credentialsById({ ...CREDENTIAL, status: 'revoked' });
+    resolvePresentationRef.mockResolvedValue({
+      status: 'ok',
+      presentation: buildPresentation({
+        holder: HOLDER,
+        credentialIds: ['cred-income'],
+        expiresAt: null,
+      }),
+    });
+
+    renderWithIntl(<PublicVerificationView token={REF} />);
+
+    expect(await screen.findByText('Revoked presentation')).toBeInTheDocument();
+  });
+
+  it('renders the invalid state when a shared credential cannot be verified', async () => {
+    // The vault has no record of this id → not verifiable → invalid, not a
+    // partial "valid" report.
+    credentialsById();
+    resolvePresentationRef.mockResolvedValue({
+      status: 'ok',
+      presentation: buildPresentation({
+        holder: HOLDER,
+        credentialIds: ['cred-missing'],
+        expiresAt: null,
+      }),
+    });
+
+    renderWithIntl(<PublicVerificationView token={REF} />);
+
+    expect(await screen.findByText('Invalid or expired presentation')).toBeInTheDocument();
   });
 
   it('never puts credential data in the shared reference', () => {

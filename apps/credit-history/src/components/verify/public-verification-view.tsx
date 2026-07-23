@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
-import { getCredentialSource } from '@acta-products/acta';
+import { getCredentialSource, parseDidStellar, useActaClient } from '@acta-products/acta';
 import type { CreditCredential, CreditProfileSummary } from '@acta-products/acta/types';
 import {
   Button,
@@ -86,6 +86,11 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
 
   const [state, setState] = React.useState<LoadState>({ phase: 'loading' });
 
+  // The ACTA SDK client is only obtainable via this hook (React context), so we
+  // read it at render and hand it to the credential source inside the effect —
+  // `getCredentialSource` cannot call the hook from within an async callback.
+  const actaClient = useActaClient();
+
   const formatOptions = React.useMemo(
     () => ({
       yesLabel: tCommon('yes'),
@@ -125,20 +130,27 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
       const expirationDate = expiresAt === null ? null : new Date(expiresAt);
 
       try {
-        // SEAM: this is where the SDK verification will be called by RPC against the vc-vault.
-        // NOTE: verifyVc returns ONLY 'valid' | 'revoked'. The 'invalid' state (not found /
-        // not verifiable) is decided by this view, not by the contract.
-        const source = getCredentialSource();
-        const [allCredentials, profile] = await Promise.all([
-          source.listCredentials(),
+        // Each credential in the presentation is verified on-chain by RPC against
+        // the vc-vault: getCredential -> vaultVerify returns ONLY 'valid' | 'revoked',
+        // which drives the per-credential and overall banner status. The 'invalid'
+        // state (a shared credential the vault cannot return / verify) is decided
+        // here, not by the contract. The owner (G… address) the vault is keyed by
+        // is derived from the presentation's holder did:stellar.
+        const owner = parseDidStellar(presentation.holder)?.address ?? null;
+        const source = owner
+          ? getCredentialSource({ owner, holderDid: presentation.holder, client: actaClient })
+          : getCredentialSource();
+
+        const [profile, resolved] = await Promise.all([
           source.getProfileSummary(),
+          Promise.all(presentation.verifiableCredential.map((id) => source.getCredential(id))),
         ]);
 
-        const credentials = allCredentials.filter((c) =>
-          presentation.verifiableCredential.includes(c.id)
-        );
-
-        if (credentials.length === 0) {
+        // Any shared credential the vault cannot return / verify makes the whole
+        // presentation untrustworthy — surface it as invalid rather than silently
+        // dropping it and reporting a partial "valid" set.
+        const credentials = resolved.filter((c): c is CreditCredential => c !== null);
+        if (credentials.length === 0 || credentials.length !== resolved.length) {
           if (!cancelled) setState({ phase: 'invalid', reason: 'malformed' });
           return;
         }
@@ -165,7 +177,7 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, actaClient]);
 
   return (
     <section className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 md:py-14">
