@@ -15,7 +15,6 @@ import { ShieldCheck, Share2, Wallet, ArrowRight } from 'lucide-react';
 
 export default async function Home() {
   const t = await getTranslations('home');
-  const tCommon = await getTranslations('common');
 
   return (
     <section className="flex-1 w-full max-w-4xl mx-auto px-4 py-16 md:py-24 flex flex-col gap-12 justify-center items-center">
@@ -56,22 +55,25 @@ export default async function Home() {
           </CardFooter>
         </Card>
 
-        {/* Vault dashboard (Coming Soon) */}
-        <Card className="opacity-75 flex flex-col justify-between border-dashed border-muted-foreground/30">
+        {/* Vault dashboard */}
+        <Card className="hover:border-primary/40 hover:bg-primary/[0.01] transition-all duration-300 flex flex-col justify-between">
           <CardHeader>
-            <div className="size-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground mb-2">
+            <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-2">
               <Wallet className="size-5" />
             </div>
-            <CardTitle className="text-xl text-muted-foreground">{t('vaultTitle')}</CardTitle>
+            <CardTitle className="text-xl">{t('vaultTitle')}</CardTitle>
             <CardDescription className="text-sm">{t('vaultDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="text-xs text-muted-foreground">{t('vaultFeatures')}</CardContent>
           <CardFooter className="border-t border-border/40 pt-4 flex justify-between items-center">
-            <Badge variant="outline" className="text-[10px] text-muted-foreground">
-              {tCommon('comingSoon')}
+            <Badge variant="success" className="text-[10px]">
+              {t('ready')}
             </Badge>
-            <Button disabled size="sm" variant="outline">
-              {t('unavailable')}
+            <Button asChild size="sm" className="cursor-pointer">
+              <Link href="/vault">
+                {t('getStarted')}
+                <ArrowRight className="size-3.5 ml-1.5" />
+              </Link>
             </Button>
           </CardFooter>
         </Card>

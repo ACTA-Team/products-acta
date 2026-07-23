@@ -5,6 +5,7 @@
   },
   "nav": {
     "home": "Inicio",
+    "vault": "Bóveda",
     "credentials": "Mis credenciales",
     "share": "Compartir",
     "openMenu": "Abrir menú",
@@ -39,6 +40,52 @@
     "unavailable": "No disponible",
     "identityMethod": "Método de Identidad:",
     "techStack": "Construido con Next.js 16, React 19 y Tailwind CSS v4."
+  },
+  "vault": {
+    "title": "Mi Bóveda de Crédito",
+    "subtitle": "Tu reputación crediticia verificable de un vistazo, en tu poder.",
+    "loading": "Cargando tu bóveda…",
+    "connect": {
+      "title": "Conecta tu billetera",
+      "description": "Conecta tu billetera Stellar para ver tu bóveda de crédito."
+    },
+    "empty": {
+      "title": "Aún no tienes credenciales",
+      "description": "Cuando los emisores te otorguen credenciales crediticias, el resumen de tu bóveda aparecerá aquí."
+    },
+    "error": {
+      "title": "No se pudo cargar tu bóveda",
+      "description": "Algo salió mal al leer tu bóveda. Inténtalo de nuevo.",
+      "retry": "Reintentar"
+    },
+    "summary": {
+      "title": "Resumen de tu perfil crediticio",
+      "disclaimer": "Una visión informativa de tus credenciales verificables. No es una puntuación crediticia ni una evaluación de riesgo.",
+      "stats": {
+        "score": "Puntuación promedio",
+        "activeCredentials": "Credenciales activas",
+        "repaidLoans": "Préstamos pagados",
+        "riskCategory": "Categoría de riesgo",
+        "historySince": "Historial desde"
+      },
+      "categoriesTitle": "Por categoría",
+      "timeline": {
+        "today": "Hoy",
+        "caption": "Una vista general de tu historial crediticio verificable."
+      }
+    },
+    "risk": {
+      "Low": "Bajo",
+      "Medium": "Medio",
+      "High": "Alto"
+    },
+    "identity": {
+      "title": "Identidad del titular",
+      "name": "Nombre del titular",
+      "did": "DID del titular"
+    },
+    "noValue": "—",
+    "viewCredentials": "Ver todas las credenciales"
   },
   "credentials": {
     "title": "Mis Credenciales",
