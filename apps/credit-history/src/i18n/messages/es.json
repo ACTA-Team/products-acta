@@ -152,7 +152,9 @@
     "issuer": "Emisor:",
     "vaultTitle": "Bóveda de Crédito ACTA",
     "revoked": "Revocada",
-    "valid": "Vigente"
+    "valid": "Vigente",
+    "noHolder": "Conecta tu billetera para generar un enlace de presentación.",
+    "generateError": "No se pudo generar el enlace de presentación. Inténtalo de nuevo."
   },
   "verify": {
     "title": "Reporte de presentación verificable",

@@ -152,7 +152,9 @@
     "issuer": "Issuer:",
     "vaultTitle": "ACTA Credit Vault",
     "revoked": "Revoked",
-    "valid": "Valid"
+    "valid": "Valid",
+    "noHolder": "Connect your wallet to generate a presentation link.",
+    "generateError": "The presentation link could not be generated. Please try again."
   },
   "verify": {
     "title": "Verifiable presentation report",

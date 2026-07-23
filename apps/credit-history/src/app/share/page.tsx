@@ -27,9 +27,17 @@ import {
   FileText,
   CheckCircle2,
 } from 'lucide-react';
+import {
+  createPresentationLink,
+  PresentationLinkError,
+  signPresentation,
+} from '@/lib/presentation-link';
+import { useSession } from '@/session/session-provider';
+import { getWalletConnector, resolveNetworkPassphrase } from '@/session/wallet-connector';
 
 export default function SharePage() {
   const t = useTranslations('share');
+  const { address, did } = useSession();
   const format = useFormatter();
   const [credentials, setCredentials] = React.useState<CreditCredential[]>([]);
   const [profile, setProfile] = React.useState<CreditProfileSummary | null>(null);
@@ -101,40 +109,49 @@ export default function SharePage() {
     }
   };
 
-  const handleGenerateLink = () => {
+  const handleGenerateLink = async () => {
     if (selectedIds.length === 0) {
       alert(t('noSelection'));
       return;
     }
 
+    const holder = did ?? profile?.holderDid ?? '';
+    if (!holder) {
+      alert(t('noHolder'));
+      return;
+    }
+
     setIsGenerating(true);
 
-    // Simulate link generation delay
-    setTimeout(() => {
-      const now = Date.now();
-      const expirationTime = getExpirationTimestamp(now);
-      setGeneratedExpirationTime(expirationTime);
-
-      // SEAM: the real ACTA sharing will be wired here (encrypted off-chain payload / ZK).
-      // Today we only generate a mock token. Missing: encryption, persistence, real expiration.
-      const payload = {
-        ids: selectedIds,
-        exp: expirationTime,
+    try {
+      const createdAt = Date.now();
+      const expirationTime = getExpirationTimestamp(createdAt);
+      const input = {
+        holder,
+        credentialIds: selectedIds,
+        expiresAt: expirationTime,
+        createdAt,
       };
 
-      const jsonStr = JSON.stringify(payload);
+      // Holder proof over the presentation digest. Best-effort: a wallet that
+      // declines to sign a bare digest must not block the share flow — the
+      // opaque server-side reference is what makes the link tamper-evident.
+      const proof =
+        (await signPresentation(getWalletConnector(), input, {
+          networkPassphrase: resolveNetworkPassphrase(),
+          address: address ?? undefined,
+        })) ?? undefined;
 
-      // Safe base64url encoding client-side
-      const utf8Bytes = new TextEncoder().encode(jsonStr);
-      const base64 = btoa(String.fromCharCode(...utf8Bytes));
-      const token = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const { url, expiresAt } = await createPresentationLink({ ...input, proof });
 
-      const origin = typeof window !== 'undefined' ? window.location.origin : '';
-      const shareUrl = `${origin}/verify/${token}`;
-
-      setGeneratedLink(shareUrl);
+      setGeneratedExpirationTime(expiresAt);
+      setGeneratedLink(url);
+    } catch (err) {
+      console.error('Failed to create the shareable presentation', err);
+      alert(err instanceof PresentationLinkError ? err.message : t('generateError'));
+    } finally {
       setIsGenerating(false);
-    }, 800);
+    }
   };
 
   const resetForm = () => {
@@ -386,7 +403,7 @@ export default function SharePage() {
                 </CardContent>
                 <CardFooter className="border-t border-border/50 pt-6">
                   <Button
-                    onClick={handleGenerateLink}
+                    onClick={() => void handleGenerateLink()}
                     disabled={selectedIds.length === 0 || isGenerating}
                     className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center text-sm font-semibold cursor-pointer"
                   >

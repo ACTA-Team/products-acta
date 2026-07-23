@@ -27,7 +27,7 @@ import {
   revokedAtOf,
   statusKindOf,
 } from '@/lib/credentials';
-import { decodePresentationToken } from '@/lib/presentation-token';
+import { resolvePresentationRef } from '@/lib/presentation-link';
 
 type LoadState =
   | { phase: 'loading' }
@@ -98,24 +98,31 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
     let cancelled = false;
 
     const verify = async () => {
-      const payload = decodePresentationToken(token);
-      if (!payload) {
+      // The URL only carries an opaque reference — the presentation itself
+      // (credential ids, holder, expiration, holder proof) is resolved from the
+      // server, which is also where expiration is enforced. Nothing here can be
+      // bypassed by editing the link.
+      const resolution = await resolvePresentationRef(token);
+
+      if (resolution.status === 'not_found') {
         if (!cancelled) setState({ phase: 'invalid', reason: 'malformed' });
         return;
       }
 
-      if (payload.exp && Date.now() > payload.exp) {
+      if (resolution.status === 'expired') {
         if (!cancelled) {
           setState({
             phase: 'invalid',
             reason: 'expired',
-            expirationDate: new Date(payload.exp),
+            expirationDate: new Date(resolution.expiresAt),
           });
         }
         return;
       }
 
-      const expirationDate = payload.exp ? new Date(payload.exp) : null;
+      const { presentation } = resolution;
+      const expiresAt = presentation.expires ? Date.parse(presentation.expires) : null;
+      const expirationDate = expiresAt === null ? null : new Date(expiresAt);
 
       try {
         // SEAM: this is where the SDK verification will be called by RPC against the vc-vault.
@@ -127,7 +134,9 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
           source.getProfileSummary(),
         ]);
 
-        const credentials = allCredentials.filter((c) => payload.ids.includes(c.id));
+        const credentials = allCredentials.filter((c) =>
+          presentation.verifiableCredential.includes(c.id)
+        );
 
         if (credentials.length === 0) {
           if (!cancelled) setState({ phase: 'invalid', reason: 'malformed' });
@@ -138,7 +147,10 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
           setState({
             phase: 'ready',
             credentials,
-            profile,
+            // The holder DID shown to the verifier comes from the stored
+            // presentation, not from the vault read — it is the identity the
+            // presentation was created (and proved) under.
+            profile: { ...profile, holderDid: presentation.holder || profile.holderDid },
             expirationDate,
           });
         }
