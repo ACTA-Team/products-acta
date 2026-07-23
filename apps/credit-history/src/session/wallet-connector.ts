@@ -41,7 +41,7 @@ export interface WalletConnector {
 
 // ── Network helpers ───────────────────────────────────────────────────────────
 
-function resolveNetworkPassphrase(): Networks {
+export function resolveNetworkPassphrase(): Networks {
   const raw = process.env.NEXT_PUBLIC_STELLAR_NETWORK ?? 'testnet';
   switch (raw.toLowerCase()) {
     case 'mainnet':
