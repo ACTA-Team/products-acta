@@ -1,6 +1,9 @@
-import { useActaClient } from '@acta-team/credentials';
-import type { CreditCredential, CreditCredentialSource, CreditProfileSummary } from '@acta-products/types';
-import type { StellarNetwork } from './did';
+import { useActaClient, type ActaClient } from '@acta-team/credentials';
+import type {
+  CreditCredential,
+  CreditCredentialSource,
+  CreditProfileSummary,
+} from '@acta-products/types';
 
 /**
  * NOTE ON THE VC → CreditCredential MAPPING BELOW:
@@ -15,7 +18,7 @@ import type { StellarNetwork } from './did';
 function mapRawVcToCreditCredential(
   raw: unknown,
   vcId: string,
-  verify: { status: 'valid' | 'revoked' } | null,
+  verify: { status: 'valid' | 'revoked'; since?: string } | null
 ): CreditCredential | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const vc = raw as Record<string, unknown>;
@@ -52,6 +55,14 @@ function mapRawVcToCreditCredential(
   const value =
     typeof subject.value === 'string' || typeof subject.value === 'number' ? subject.value : '';
 
+  // When the vault reports a credential as revoked, `since` carries the on-chain
+  // revocation timestamp. Surface it as `claims.revokedAt` so the UI (which reads
+  // `revokedAtOf`) shows a real revocation date instead of the dateless badge.
+  const claims: Record<string, unknown> =
+    verify?.status === 'revoked' && typeof verify.since === 'string'
+      ? { ...subject, revokedAt: verify.since }
+      : subject;
+
   return {
     id: typeof vc.id === 'string' ? vc.id : vcId,
     type: category,
@@ -62,7 +73,7 @@ function mapRawVcToCreditCredential(
     value,
     description: typeof subject.description === 'string' ? subject.description : '',
     status: verify?.status ?? 'valid',
-    claims: subject,
+    claims,
   };
 }
 
@@ -76,17 +87,27 @@ export interface ActaCredentialSourceOptions {
    * one from owner alone.
    */
   holderDid?: string;
+  /**
+   * Pre-resolved ACTA SDK client. Pass this when the source is constructed
+   * outside of React render (e.g. the public verifier builds it inside an
+   * effect), since `useActaClient()` is a hook and may only run during render.
+   * When omitted, the client is read from context via `useActaClient()`, which
+   * requires the constructor to run during render inside an `ActaConfig`.
+   */
+  client?: ActaClient;
 }
 
 export class ActaCredentialSource implements CreditCredentialSource {
   private readonly owner: string;
   private readonly holderDid: string;
-  private readonly client: ReturnType<typeof useActaClient>;
+  private readonly client: ActaClient;
 
-  constructor({ owner, holderDid = '' }: ActaCredentialSourceOptions) {
+  constructor({ owner, holderDid = '', client }: ActaCredentialSourceOptions) {
     this.owner = owner;
     this.holderDid = holderDid;
-    this.client = useActaClient();
+    // Prefer the injected client; `??` short-circuits so the hook is only called
+    // when no client was provided (render-time callers keep working unchanged).
+    this.client = client ?? useActaClient();
   }
 
   async listCredentials(): Promise<CreditCredential[]> {
@@ -104,7 +125,7 @@ export class ActaCredentialSource implements CreditCredentialSource {
     const credentials = await this.listCredentials();
     const active = credentials.filter((c) => c.status === 'valid');
     const repaidLoans = credentials.filter(
-      (c) => c.type === 'MicrofinanceRepayment' || c.type === 'DeFiLoan',
+      (c) => c.type === 'MicrofinanceRepayment' || c.type === 'DeFiLoan'
     );
     const scores = active
       .map((c) => (typeof c.value === 'number' ? c.value : null))

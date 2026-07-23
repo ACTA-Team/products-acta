@@ -1,3 +1,4 @@
+import type { ActaClient } from '@acta-team/credentials';
 import { didStellar } from './did';
 import { ActaCredentialSource } from './acta-credential-source';
 import type {
@@ -177,6 +178,12 @@ export interface MockSourceOptions {
   owner?: string;
   /** Full did:stellar for the holder, forwarded to ActaCredentialSource when present. */
   holderDid?: string;
+  /**
+   * Pre-resolved ACTA SDK client, forwarded to ActaCredentialSource. Required
+   * when the real source is built outside React render (e.g. the public
+   * verifier constructs it inside an effect), where `useActaClient()` cannot run.
+   */
+  client?: ActaClient;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -237,7 +244,11 @@ export function getCredentialSource(options?: MockSourceOptions): CreditCredenti
   const dataSource = process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock';
 
   if (dataSource === 'real' && options?.owner) {
-    return new ActaCredentialSource({ owner: options.owner, holderDid: options.holderDid });
+    return new ActaCredentialSource({
+      owner: options.owner,
+      holderDid: options.holderDid,
+      client: options.client,
+    });
   }
 
   if (dataSource !== 'mock' && dataSource !== 'real') {
