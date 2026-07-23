@@ -11,6 +11,7 @@ export async function Header() {
 
   const navLinks = [
     { href: '/', label: t('home') },
+    { href: '/vault', label: t('vault') },
     { href: '/credentials', label: t('credentials') },
     { href: '/share', label: t('share') },
   ];

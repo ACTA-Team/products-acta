@@ -5,6 +5,7 @@
   },
   "nav": {
     "home": "Home",
+    "vault": "Vault",
     "credentials": "My credentials",
     "share": "Share",
     "openMenu": "Open menu",
@@ -39,6 +40,52 @@
     "unavailable": "Unavailable",
     "identityMethod": "Identity Method:",
     "techStack": "Built with Next.js 16, React 19, and Tailwind CSS v4."
+  },
+  "vault": {
+    "title": "My Credit Vault",
+    "subtitle": "Your verifiable credit reputation at a glance, owned by you.",
+    "loading": "Loading your vault…",
+    "connect": {
+      "title": "Connect your wallet",
+      "description": "Connect your Stellar wallet to view your credit vault."
+    },
+    "empty": {
+      "title": "No credentials yet",
+      "description": "Once issuers grant you credit credentials, your vault summary will appear here."
+    },
+    "error": {
+      "title": "Couldn't load your vault",
+      "description": "Something went wrong while reading your vault. Please try again.",
+      "retry": "Try again"
+    },
+    "summary": {
+      "title": "Credit profile summary",
+      "disclaimer": "An informational overview of your verifiable credentials. This is not a credit score or risk assessment.",
+      "stats": {
+        "score": "Average score",
+        "activeCredentials": "Active credentials",
+        "repaidLoans": "Repaid loans",
+        "riskCategory": "Risk category",
+        "historySince": "History since"
+      },
+      "categoriesTitle": "By category",
+      "timeline": {
+        "today": "Today",
+        "caption": "A snapshot of your verifiable credit history."
+      }
+    },
+    "risk": {
+      "Low": "Low",
+      "Medium": "Medium",
+      "High": "High"
+    },
+    "identity": {
+      "title": "Holder identity",
+      "name": "Holder name",
+      "did": "Holder DID"
+    },
+    "noValue": "—",
+    "viewCredentials": "View all credentials"
   },
   "credentials": {
     "title": "My Credentials",
