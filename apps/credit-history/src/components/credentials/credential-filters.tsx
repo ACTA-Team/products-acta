@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import type { CredentialStatusKind } from '@acta-products/ui';
 import { Button, cn } from '@acta-products/ui';
 import { X } from 'lucide-react';
-import type { CreditCategory } from '@/types';
+import type { CreditCategory } from '@acta-products/acta/types';
 import { CREDIT_CATEGORIES, CREDENTIAL_STATUSES } from '@/lib/credentials';
 
 export type CategoryFilter = CreditCategory | 'all';
