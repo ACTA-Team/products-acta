@@ -11,6 +11,7 @@ import {
   buildPresentation,
   presentationDigest,
   type PresentationProof,
+  type ProofVerification,
   type VerifiablePresentation,
 } from '@acta-products/acta/presentation';
 import type { SignTransactionOpts, WalletConnector } from '@/session/wallet-connector';
@@ -70,7 +71,7 @@ export async function createPresentationLink(
 }
 
 export type PresentationResolution =
-  | { status: 'ok'; presentation: VerifiablePresentation }
+  | { status: 'ok'; presentation: VerifiablePresentation; proof: ProofVerification }
   | { status: 'not_found' }
   | { status: 'expired'; expiresAt: number };
 
@@ -94,8 +95,11 @@ export async function resolvePresentationRef(ref: string): Promise<PresentationR
     return { status: 'not_found' };
   }
 
-  const { presentation } = (await response.json()) as { presentation: VerifiablePresentation };
-  return { status: 'ok', presentation };
+  const { presentation, proof } = (await response.json()) as {
+    presentation: VerifiablePresentation;
+    proof: ProofVerification;
+  };
+  return { status: 'ok', presentation, proof };
 }
 
 // ─── Holder proof ─────────────────────────────────────────────────────────────
@@ -104,33 +108,42 @@ export async function resolvePresentationRef(ref: string): Promise<PresentationR
  * Ask the connected wallet to sign the digest of the presentation about to be
  * created.
  *
- * Best-effort by design: `signTransaction` expects a Stellar XDR envelope, and
- * neither the mock connector nor every real wallet will sign a bare digest. A
- * refusal must not block sharing, so failures resolve to `null` and the
- * presentation is persisted unsigned — the opaque reference is what makes the
- * link tamper-evident, the proof is the extra attribution layer the public
- * verifier (#40) will validate against the holder's did:stellar key.
+ * Uses `signMessage`, the wallet's arbitrary-message primitive (SWK / SEP
+ * message-signing) — not `signTransaction`, which expects a Stellar XDR
+ * envelope and will refuse or mis-sign a bare digest.
+ *
+ * The exact bytes signed, pinned so `verifyPresentationProof` (#40) can
+ * recompute them: `canonicalPresentationPayload(presentation)` → SHA-256 →
+ * base64url → that base64url *string*, UTF-8 encoded, is what's passed to
+ * `signMessage`. The wallet returns a base64-encoded ed25519 signature over
+ * those bytes.
+ *
+ * Best-effort by design: a wallet without `signMessage`, or one that rejects
+ * the request, must not block sharing — failures resolve to `null` and the
+ * presentation is persisted unsigned. The opaque reference is what makes the
+ * link tamper-evident regardless; the proof is the additional attribution
+ * layer the public verifier validates against the holder's did:stellar key.
  */
 export async function signPresentation(
   connector: WalletConnector,
   input: { holder: string; credentialIds: string[]; expiresAt: number | null; createdAt: number },
   opts: SignTransactionOpts
 ): Promise<PresentationProof | null> {
-  if (!connector.signTransaction) return null;
+  if (!connector.signMessage) return null;
 
   try {
     const presentation = buildPresentation(input);
     const digest = await presentationDigest(presentation);
-    const { signedXdr } = await connector.signTransaction(digest, opts);
+    const { signedMessage } = await connector.signMessage(digest, opts);
 
-    if (!signedXdr) return null;
+    if (!signedMessage) return null;
 
     return {
       type: 'StellarWalletSignature2026',
       created: new Date().toISOString(),
       verificationMethod: input.holder,
       digest,
-      signature: signedXdr,
+      signature: signedMessage,
     };
   } catch (err) {
     console.warn('Holder proof skipped — the wallet could not sign the presentation digest.', err);

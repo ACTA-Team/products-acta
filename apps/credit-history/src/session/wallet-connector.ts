@@ -25,6 +25,7 @@
 
 import { Networks, StellarWalletsKit } from '@creit.tech/stellar-wallets-kit';
 import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter';
+import { Keypair } from '@stellar/stellar-sdk';
 
 // ── Shared types ──────────────────────────────────────────────────────────────
 
@@ -36,6 +37,14 @@ export interface SignTransactionOpts {
 export interface WalletConnector {
   connect(): Promise<{ address: string }>;
   signTransaction?: (xdr: string, opts: SignTransactionOpts) => Promise<{ signedXdr: string }>;
+  /**
+   * Signs an arbitrary UTF-8 message (not a Stellar XDR envelope) and returns
+   * a base64-encoded ed25519 signature over it. Used for the presentation
+   * holder proof (#40) — `signTransaction` cannot be used there because a
+   * presentation digest is not a transaction envelope and wallets will refuse
+   * or mis-sign it.
+   */
+  signMessage?: (message: string, opts: SignTransactionOpts) => Promise<{ signedMessage: string }>;
   disconnect(): Promise<void>;
 }
 
@@ -75,7 +84,16 @@ export class UserRejectedError extends Error {
 
 // ── MockWalletConnector ───────────────────────────────────────────────────────
 
-const MOCK_ADDRESS = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
+/**
+ * Fixed, non-secret dev/CI keypair. Its address is what `connect()` returns
+ * as the holder, and its secret is what `signMessage()` signs with — kept in
+ * sync deliberately so a presentation shared through the mock connector
+ * produces a proof that `verifyPresentationProof` can actually validate,
+ * exercising the "signed" state locally without a real wallet extension.
+ * Never use this seed for anything beyond local dev/CI.
+ */
+const MOCK_KEYPAIR = Keypair.fromRawEd25519Seed(Buffer.alloc(32, 7));
+const MOCK_ADDRESS = MOCK_KEYPAIR.publicKey();
 
 class MockWalletConnector implements WalletConnector {
   async connect(): Promise<{ address: string }> {
@@ -89,6 +107,16 @@ class MockWalletConnector implements WalletConnector {
   /** Returns the input XDR unchanged — suitable only for dev/CI. */
   async signTransaction(xdr: string): Promise<{ signedXdr: string }> {
     return { signedXdr: xdr };
+  }
+
+  /**
+   * Deterministically "signs" the message with a fixed local keypair so the
+   * mock connector still produces a proof that `verifyPresentationProof` can
+   * validate in dev/CI without a real wallet extension.
+   */
+  async signMessage(message: string): Promise<{ signedMessage: string }> {
+    const signature = MOCK_KEYPAIR.sign(Buffer.from(message, 'utf8'));
+    return { signedMessage: signature.toString('base64') };
   }
 }
 
@@ -134,6 +162,21 @@ class RealWalletConnector implements WalletConnector {
         address: opts.address,
       });
       return { signedXdr: signedTxXdr };
+    } catch (err) {
+      throw this.classifyError(err);
+    }
+  }
+
+  async signMessage(
+    message: string,
+    opts: SignTransactionOpts
+  ): Promise<{ signedMessage: string }> {
+    try {
+      const { signedMessage } = await StellarWalletsKit.signMessage(message, {
+        networkPassphrase: opts.networkPassphrase ?? this.networkPassphrase,
+        address: opts.address,
+      });
+      return { signedMessage };
     } catch (err) {
       throw this.classifyError(err);
     }

@@ -234,6 +234,15 @@
       "title": "Presentation verification failed",
       "description": "The verification token could not be decrypted, decoded, or validated. Please request a new link from the credential owner.",
       "expiredDescription": "This verification link expired on {date, date, medium} at {date, time, short}. Please request a new link from the credential owner."
+    },
+    "attribution": {
+      "title": "Presented by the holder",
+      "description": "This presentation is cryptographically attributed to the holder shown above.",
+      "unsignedTitle": "Attribution not available",
+      "unsignedDescription": "This link wasn't signed by the holder's wallet. Its contents are still tamper-evident (the link itself cannot be edited or extended), but nothing here cryptographically proves who put it together.",
+      "mismatchTitle": "Attribution could not be verified",
+      "mismatchDescription": "This presentation carries a signature that does not check out against the holder's key. The on-chain credential statuses below are unaffected, but this presentation cannot be attributed to the holder — treat it with caution.",
+      "whatThisMeans": "This is about who assembled this link, not whether the credentials in it are valid — that's shown separately above."
     }
   },
   "session": {
