@@ -1,7 +1,3 @@
-/**
- * @fileoverview Verifiable Presentation model for ACTA share links.
- */
-
 import { Keypair } from '@stellar/stellar-sdk';
 import { parseDidStellar } from './did';
 
@@ -166,6 +162,31 @@ export function attachPresentationProof(
 }
 
 /**
+ * SEP-0053 preimage prefix. Fixed by the spec — never change this.
+ * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md
+ */
+const SEP0053_PREFIX = 'Stellar Signed Message:\n';
+
+/**
+ * The exact digest a SEP-0053-compliant `signMessage` implementation signs:
+ * `SHA-256("Stellar Signed Message:\n" + message)`, UTF-8 throughout. This is
+ * NOT the same as hashing `message` alone — the fixed prefix is what makes a
+ * signed message unambiguously distinct from a signed transaction envelope
+ * and prevents cross-protocol replay, per the SEP's own rationale.
+ *
+ * Uses Web Crypto (`globalThis.crypto.subtle`) rather than Node's `crypto`
+ * module so this stays isomorphic — `presentationDigest` above already
+ * depends on the same API, and this function needs to be callable from
+ * `signPresentation` on the client as well as `verifyPresentationProof` on
+ * the server.
+ */
+export async function sep0053MessageHash(message: string): Promise<Uint8Array> {
+  const bytes = new TextEncoder().encode(SEP0053_PREFIX + message);
+  const hash = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+  return new Uint8Array(hash);
+}
+
+/**
  * Result of checking a presentation's holder proof.
  *
  * `unsigned` and `mismatch` are deliberately distinct: `unsigned` means the
@@ -243,13 +264,12 @@ export async function verifyPresentationProof(
   let verified: boolean;
   try {
     const keypair = Keypair.fromPublicKey(parsedHolder.address);
-    // The exact payload a wallet signs (see `signPresentation`): the
-    // base64url digest *string*, UTF-8 encoded — not the raw 32 hash bytes —
-    // signed via the wallet's arbitrary-message primitive (`signMessage`),
-    // which returns a base64-encoded ed25519 signature.
-    const message = Buffer.from(proof.digest, 'utf8');
+    // What the wallet actually signed is the SEP-0053 preimage of the
+    // digest string — not the digest's raw UTF-8 bytes. See the file-level
+    // note above.
+    const messageHash = await sep0053MessageHash(proof.digest);
     const signature = Buffer.from(proof.signature, 'base64');
-    verified = signature.length > 0 && keypair.verify(message, signature);
+    verified = signature.length > 0 && keypair.verify(Buffer.from(messageHash), signature);
   } catch {
     // A malformed G… address (bad checksum/length) or non-base64 signature
     // lands here — it can never verify, so it's a mismatch, not a crash.

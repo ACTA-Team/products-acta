@@ -219,7 +219,7 @@
     "banner": {
       "valid": {
         "title": "Verificada y vigente",
-        "description": "Esta presentación es criptográficamente auténtica, coincide con el titular y está vigente."
+        "description": "Las credenciales de esta presentación están verificadas criptográficamente contra el emisor y están vigentes."
       },
       "revoked": {
         "title": "Presentación revocada",
@@ -234,6 +234,15 @@
       "title": "Falló la verificación de la presentación",
       "description": "El token de verificación no pudo descifrarse, decodificarse o validarse. Solicita un nuevo enlace al titular de las credenciales.",
       "expiredDescription": "Este enlace de verificación expiró el {date, date, medium} a las {date, time, short}. Solicita un nuevo enlace al titular de las credenciales."
+    },
+    "attribution": {
+      "title": "Presentado por el titular",
+      "description": "Esta presentación está atribuida criptográficamente al titular mostrado arriba.",
+      "unsignedTitle": "Atribución no disponible",
+      "unsignedDescription": "Este enlace no fue firmado por la billetera del titular. Su contenido sigue siendo a prueba de manipulaciones (el enlace en sí no puede editarse ni extenderse), pero nada aquí demuestra criptográficamente quién lo generó.",
+      "mismatchTitle": "No se pudo verificar la atribución",
+      "mismatchDescription": "Esta presentación incluye una firma que no coincide con la clave del titular. El estado en cadena de las credenciales que se muestra arriba no se ve afectado, pero esta presentación no puede atribuirse al titular — trátala con precaución.",
+      "whatThisMeans": "Esto indica quién armó este enlace, no si las credenciales que contiene son válidas — eso se muestra por separado arriba."
     }
   },
   "session": {

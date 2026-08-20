@@ -12,12 +12,7 @@ export interface ProductMeta {
 }
 
 /** Domain category a credit credential falls under, derived from its issuer `type`. */
-export type CreditCategory =
-  | 'INCOME'
-  | 'EMPLOYMENT'
-  | 'REPAYMENT_HISTORY'
-  | 'LOAN'
-  | 'UTILITY';
+export type CreditCategory = 'INCOME' | 'EMPLOYMENT' | 'REPAYMENT_HISTORY' | 'LOAN' | 'UTILITY';
 
 /** Represents a credit-related verifiable credential. */
 export interface CreditCredential {

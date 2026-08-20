@@ -11,6 +11,7 @@ import {
   MAX_PRESENTATION_CREDENTIALS,
   presentationDigest,
   presentationExpiresAt,
+  sep0053MessageHash,
   verifyPresentationProof,
 } from './presentation';
 
@@ -116,15 +117,49 @@ describe('canonicalPresentationPayload', () => {
   });
 });
 
+describe('sep0053MessageHash', () => {
+  // Official test vectors from the SEP-0053 spec itself, so this checks our
+  // implementation against the standard — not just internal round-trip
+  // consistency — which is what makes a real wallet's signature (Freighter /
+  // Stellar Wallets Kit, both SEP-0053-compliant) actually verify.
+  // https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md
+  const SEED = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+  const ADDRESS = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
+
+  it.each([
+    [
+      'Hello, World!',
+      'fO5dbYhXUhBMhe6kId/cuVq/AfEnHRHEvsP8vXh03M1uLpi5e46yO2Q8rEBzu3feXQewcQE5GArp88u6ePK6BA==',
+    ],
+    [
+      'こんにちは、世界！',
+      'CDU265Xs8y3OWbB/56H9jPgUss5G9A0qFuTqH2zs2YDgTm+++dIfmAEceFqB7bhfN3am59lCtDXrCtwH2k1GBA==',
+    ],
+  ])('reproduces the spec signature for %j', async (message, expectedSignature) => {
+    const hash = await sep0053MessageHash(message);
+    const signer = Keypair.fromSecret(SEED);
+
+    expect(signer.sign(Buffer.from(hash)).toString('base64')).toBe(expectedSignature);
+    expect(
+      Keypair.fromPublicKey(ADDRESS).verify(
+        Buffer.from(hash),
+        Buffer.from(expectedSignature, 'base64')
+      )
+    ).toBe(true);
+  });
+});
+
 describe('verifyPresentationProof', () => {
   const keypair = Keypair.random();
   const otherKeypair = Keypair.random();
   const signerHolder = didStellar('testnet', keypair.publicKey());
 
-  /** Signs `digest` the way `signPresentation` does: the base64url digest
-   * string, UTF-8 encoded, ed25519-signed, signature base64-encoded. */
-  function signDigest(signer: Keypair, digest: string): string {
-    return signer.sign(Buffer.from(digest, 'utf8')).toString('base64');
+  /** Signs `digest` the way a SEP-0053-compliant `signMessage` implementation
+   * (Freighter / Stellar Wallets Kit) does — over the SEP-0053 preimage hash,
+   * not the raw digest bytes. */
+  async function signDigest(signer: Keypair, digest: string): Promise<string> {
+    const hash = await sep0053MessageHash(digest);
+    return signer.sign(Buffer.from(hash)).toString('base64');
   }
 
   async function buildSignedPresentation(
@@ -143,7 +178,7 @@ describe('verifyPresentationProof', () => {
       created: new Date(NOW).toISOString(),
       verificationMethod: signerHolder,
       digest,
-      signature: signDigest(keypair, digest),
+      signature: await signDigest(keypair, digest),
       ...overrides,
     });
   }
@@ -181,7 +216,7 @@ describe('verifyPresentationProof', () => {
       created: new Date(NOW).toISOString(),
       verificationMethod: signerHolder,
       digest,
-      signature: signDigest(otherKeypair, digest),
+      signature: await signDigest(otherKeypair, digest),
     });
 
     expect(await verifyPresentationProof(signed)).toEqual({
@@ -213,7 +248,7 @@ describe('verifyPresentationProof', () => {
       created: new Date(NOW).toISOString(),
       verificationMethod: 'not-a-did',
       digest,
-      signature: signDigest(keypair, digest),
+      signature: await signDigest(keypair, digest),
     });
 
     expect(await verifyPresentationProof(signed)).toEqual({

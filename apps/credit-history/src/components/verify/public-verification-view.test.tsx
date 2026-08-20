@@ -153,6 +153,9 @@ describe('PublicVerificationView', () => {
   });
 
   describe('holder proof attribution', () => {
+    const BANNER_VALID_DESCRIPTION =
+      "This presentation's credentials are cryptographically verified against the issuer and are currently valid.";
+
     it('renders the signed state distinctly from credential status', async () => {
       resolvePresentationRef.mockResolvedValue(okResolution({}, { status: 'signed' }));
 
@@ -164,7 +167,7 @@ describe('PublicVerificationView', () => {
       expect(screen.getByText('Verified & valid')).toBeInTheDocument();
     });
 
-    it('renders the unsigned state as a neutral note, not a warning', async () => {
+    it('renders the unsigned state as a neutral note, not a warning, without the banner overclaiming attribution', async () => {
       resolvePresentationRef.mockResolvedValue(okResolution({}, { status: 'unsigned' }));
 
       renderWithIntl(<PublicVerificationView token={REF} />);
@@ -173,9 +176,13 @@ describe('PublicVerificationView', () => {
       expect(screen.getByText('Attribution not available')).toBeInTheDocument();
       // Unsigned must never be conflated with the credential-invalid state.
       expect(screen.queryByText('Invalid or expired presentation')).not.toBeInTheDocument();
+      // The credential banner must describe credential validity only — it
+      // must not claim the presentation "matches the holder" when there is
+      // no proof to back that up.
+      expect(screen.getByText(BANNER_VALID_DESCRIPTION)).toBeInTheDocument();
     });
 
-    it('renders a prominent mismatch warning while keeping credential status visible', async () => {
+    it('renders a prominent mismatch warning while keeping credential status visible and the banner not overclaiming attribution', async () => {
       resolvePresentationRef.mockResolvedValue(
         okResolution({}, { status: 'mismatch', reason: 'signature' })
       );
@@ -187,6 +194,9 @@ describe('PublicVerificationView', () => {
       // The on-chain credential statuses stay visible alongside the warning.
       expect(screen.getByText('Verified & valid')).toBeInTheDocument();
       expect(screen.getByText('Anchor Payroll Income')).toBeInTheDocument();
+      // Same overclaiming check as the unsigned case — a signature mismatch
+      // must not be masked by a banner that still claims holder attribution.
+      expect(screen.getByText(BANNER_VALID_DESCRIPTION)).toBeInTheDocument();
     });
   });
 });

@@ -219,7 +219,7 @@
     "banner": {
       "valid": {
         "title": "Verified & valid",
-        "description": "This presentation is cryptographically authentic, matches the holder, and is currently valid."
+        "description": "This presentation's credentials are cryptographically verified against the issuer and are currently valid."
       },
       "revoked": {
         "title": "Revoked presentation",

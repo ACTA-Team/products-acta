@@ -8,7 +8,11 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Keypair } from '@stellar/stellar-sdk';
-import { buildPresentation, presentationDigest } from '@acta-products/acta/presentation';
+import {
+  buildPresentation,
+  presentationDigest,
+  sep0053MessageHash,
+} from '@acta-products/acta/presentation';
 import { didStellar } from '@acta-products/acta/did';
 import {
   isPresentationRef,
@@ -46,12 +50,13 @@ async function signedProof(overrides: {
     createdAt: overrides.createdAt,
   });
   const digest = await presentationDigest(vp);
+  const hash = await sep0053MessageHash(digest);
   return {
     type: 'StellarWalletSignature2026' as const,
     created: new Date(overrides.createdAt).toISOString(),
     verificationMethod: holder,
     digest,
-    signature: signer.sign(Buffer.from(digest, 'utf8')).toString('base64'),
+    signature: signer.sign(Buffer.from(hash)).toString('base64'),
   };
 }
 
@@ -151,6 +156,58 @@ describe('POST /api/presentations', () => {
     });
 
     expect(res.status).toBe(400);
+  });
+
+  it('rejects (400) a proof with an oversized proof.created', async () => {
+    const createdAt = Date.now();
+    const proof = await signedProof({ credentialIds: ['cred-a'], expiresAt: null, createdAt });
+
+    const res = await post({
+      holder: HOLDER,
+      credentialIds: ['cred-a'],
+      expiresAt: null,
+      createdAt,
+      proof: { ...proof, created: proof.created + 'a'.repeat(5000) },
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects (400) a proof with an unparseable proof.created', async () => {
+    const createdAt = Date.now();
+    const proof = await signedProof({ credentialIds: ['cred-a'], expiresAt: null, createdAt });
+
+    const res = await post({
+      holder: HOLDER,
+      credentialIds: ['cred-a'],
+      expiresAt: null,
+      createdAt,
+      proof: { ...proof, created: 'not-a-timestamp' },
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it("defaults an omitted proof.created to the presentation's own createdAt", async () => {
+    const createdAt = Date.now();
+    const fullProof = await signedProof({ credentialIds: ['cred-a'], expiresAt: null, createdAt });
+    const proofWithoutCreated: Partial<typeof fullProof> = { ...fullProof };
+    delete proofWithoutCreated.created;
+
+    const res = await post({
+      holder: HOLDER,
+      credentialIds: ['cred-a'],
+      expiresAt: null,
+      createdAt,
+      proof: proofWithoutCreated,
+    });
+    expect(res.status).toBe(201);
+
+    const { ref } = (await res.json()) as { ref: string };
+    const resolved = await resolveStoredPresentation(ref);
+    expect(resolved.status).toBe('ok');
+    if (resolved.status !== 'ok') return;
+    expect(resolved.presentation.proof?.created).toBe(new Date(createdAt).toISOString());
   });
 
   it('rejects (400) a malformed (non-object) proof', async () => {

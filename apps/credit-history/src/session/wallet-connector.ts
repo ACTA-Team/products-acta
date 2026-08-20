@@ -1,16 +1,6 @@
 /**
  * @fileoverview Wallet connector factory and implementations.
  *
- * The WalletConnector interface is the only contract the rest of the app
- * (SessionProvider, useSession, WalletButton) depends on. Both connectors
- * implement it; the factory decides which one to return at runtime.
- *
- * Gate:
- *   NEXT_PUBLIC_WALLET=real   → RealWalletConnector (Stellar Wallets Kit)
- *   anything else / unset     → MockWalletConnector  (CI / dev without extension)
- *
- * Issue #35 — replace the SEAM mock with a real Freighter / SWK connector.
- *
  * NOTE ON THE PACKAGE VERSION:
  * @creit.tech/stellar-wallets-kit went through a breaking v1 → v2 rewrite.
  * As of v2.x, `StellarWalletsKit` is a *static* class (no `new`), there is
@@ -26,6 +16,7 @@
 import { Networks, StellarWalletsKit } from '@creit.tech/stellar-wallets-kit';
 import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter';
 import { Keypair } from '@stellar/stellar-sdk';
+import { sep0053MessageHash } from '@acta-products/acta/presentation';
 
 // ── Shared types ──────────────────────────────────────────────────────────────
 
@@ -110,12 +101,16 @@ class MockWalletConnector implements WalletConnector {
   }
 
   /**
-   * Deterministically "signs" the message with a fixed local keypair so the
-   * mock connector still produces a proof that `verifyPresentationProof` can
-   * validate in dev/CI without a real wallet extension.
+   * Deterministically "signs" the message with a fixed local keypair,
+   * following the same SEP-0053 preimage a real wallet's `signMessage` signs
+   * (`SHA-256("Stellar Signed Message:\n" + message)`, not the raw message
+   * bytes) — so the mock connector still produces a proof that
+   * `verifyPresentationProof` validates in dev/CI without a real wallet
+   * extension.
    */
   async signMessage(message: string): Promise<{ signedMessage: string }> {
-    const signature = MOCK_KEYPAIR.sign(Buffer.from(message, 'utf8'));
+    const hash = await sep0053MessageHash(message);
+    const signature = MOCK_KEYPAIR.sign(Buffer.from(hash));
     return { signedMessage: signature.toString('base64') };
   }
 }
@@ -223,6 +218,15 @@ class RealWalletConnector implements WalletConnector {
 export function getWalletConnector(): WalletConnector {
   if (process.env.NEXT_PUBLIC_WALLET === 'real') {
     return new RealWalletConnector();
+  }
+  // The mock connector's keypair is fixed and public (see MOCK_KEYPAIR above)
+  // — anyone can reproduce a "valid" proof for it. It must never be reachable
+  // outside development/test, regardless of how NEXT_PUBLIC_WALLET ends up
+  // unset or misconfigured in a deployed environment.
+  if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
+    throw new Error(
+      'NEXT_PUBLIC_WALLET must be set to "real" outside development/test — the mock wallet is not safe to serve in this environment.'
+    );
   }
   return new MockWalletConnector();
 }

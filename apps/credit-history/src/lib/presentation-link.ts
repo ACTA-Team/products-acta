@@ -108,15 +108,18 @@ export async function resolvePresentationRef(ref: string): Promise<PresentationR
  * Ask the connected wallet to sign the digest of the presentation about to be
  * created.
  *
- * Uses `signMessage`, the wallet's arbitrary-message primitive (SWK / SEP
+ * Uses `signMessage`, the wallet's arbitrary-message primitive (SWK / SEP-0053
  * message-signing) — not `signTransaction`, which expects a Stellar XDR
  * envelope and will refuse or mis-sign a bare digest.
  *
  * The exact bytes signed, pinned so `verifyPresentationProof` (#40) can
  * recompute them: `canonicalPresentationPayload(presentation)` → SHA-256 →
- * base64url → that base64url *string*, UTF-8 encoded, is what's passed to
- * `signMessage`. The wallet returns a base64-encoded ed25519 signature over
- * those bytes.
+ * base64url → that base64url *string* is what's passed to `signMessage`.
+ * A SEP-0053-compliant wallet does NOT sign that string's raw UTF-8 bytes —
+ * it signs `SHA-256("Stellar Signed Message:\n" + digestString)` internally
+ * and returns a base64-encoded ed25519 signature over that hash. See
+ * `sep0053MessageHash` in `packages/acta/src/presentation.ts`, which
+ * `verifyPresentationProof` uses to reconstruct the same preimage.
  *
  * Best-effort by design: a wallet without `signMessage`, or one that rejects
  * the request, must not block sharing — failures resolve to `null` and the

@@ -65,8 +65,17 @@ async function parseProof(
       'proof.digest, proof.signature and proof.verificationMethod must be non-empty strings within length bounds.'
     );
   }
-  if (proof.created !== undefined && typeof proof.created !== 'string') {
-    throw new MalformedProofError('proof.created must be a string when present.');
+  const created = proof.created;
+  if (
+    created !== undefined &&
+    (typeof created !== 'string' ||
+      created.length === 0 ||
+      created.length > MAX_PROOF_FIELD_LENGTH ||
+      !Number.isFinite(Date.parse(created)))
+  ) {
+    throw new MalformedProofError(
+      'proof.created must be a bounded, parseable ISO timestamp when present.'
+    );
   }
 
   const digest = proof.digest as string;
@@ -84,7 +93,10 @@ async function parseProof(
 
   return {
     type: 'StellarWalletSignature2026',
-    created: typeof proof.created === 'string' ? proof.created : new Date().toISOString(),
+    // Default to the presentation's own createdAt rather than the server's
+    // "now" at proof-validation time, so an unspecified `created` stays
+    // consistent with the rest of the persisted object.
+    created: created ?? new Date(expected.createdAt).toISOString(),
     verificationMethod,
     digest,
     signature,
