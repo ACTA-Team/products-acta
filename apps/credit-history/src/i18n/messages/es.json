@@ -167,6 +167,10 @@
   "share": {
     "title": "Compartir Presentación",
     "subtitle": "Selecciona credenciales para generar un enlace de presentación seguro para prestamistas.",
+    "connect": {
+      "title": "Conecta tu billetera",
+      "description": "Conecta tu billetera Stellar para seleccionar credenciales y generar un enlace de presentación."
+    },
     "selectCredentials": "Seleccionar Credenciales",
     "selectCredentialsDesc": "Solo los elementos seleccionados serán codificados y compartidos en la presentación.",
     "expirationOptions": "Expiración de la Presentación",

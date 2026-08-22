@@ -3,7 +3,6 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { getCredentialSource } from '@acta-products/acta';
 import type { CreditCredential } from '@acta-products/acta/types';
 import {
   Button,
@@ -18,7 +17,9 @@ import {
   StatusBadge,
   type CredentialStatusKind,
 } from '@acta-products/ui';
-import { AlertCircle, ArrowLeft, FileQuestion, RefreshCw, Share2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, FileQuestion, RefreshCw, Share2, Wallet } from 'lucide-react';
+import { useSession } from '@/session/session-provider';
+import { useCredentialSource } from '@/lib/use-credential-source';
 import {
   categoryOf,
   detailClaimEntries,
@@ -107,16 +108,21 @@ interface CredentialDetailViewProps {
 
 export function CredentialDetailView({ id }: CredentialDetailViewProps) {
   const t = useTranslations('credentials');
+  const tSession = useTranslations('session');
   const tCommon = useTranslations('common');
   const statusLabel = useStatusLabel();
+  const { connect } = useSession();
+  const credentialSource = useCredentialSource();
 
   const [state, setState] = React.useState<LoadState>({ phase: 'loading' });
   const [reloadKey, setReloadKey] = React.useState(0);
 
   React.useEffect(() => {
+    if (credentialSource.status !== 'ready') return;
+
     let cancelled = false;
 
-    getCredentialSource()
+    credentialSource.source
       .getCredential(id)
       .then((credential) => {
         if (cancelled) return;
@@ -134,7 +140,7 @@ export function CredentialDetailView({ id }: CredentialDetailViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [id, reloadKey]);
+  }, [credentialSource, id, reloadKey]);
 
   const retry = () => {
     setState({ phase: 'loading' });
@@ -160,13 +166,31 @@ export function CredentialDetailView({ id }: CredentialDetailViewProps) {
           {t('detail.back')}
         </Link>
 
-        {state.phase === 'loading' && (
+        {credentialSource.status === 'disconnected' && (
+          <StatePanel
+            icon={<Wallet className="size-6" />}
+            title={t('empty.connectTitle')}
+            description={t('empty.connectDescription')}
+            action={
+              <Button
+                size="sm"
+                className="cursor-pointer gap-1.5"
+                onClick={() => connect().catch(console.error)}
+              >
+                <Wallet className="size-3.5" />
+                {tSession('connect')}
+              </Button>
+            }
+          />
+        )}
+
+        {credentialSource.status === 'ready' && state.phase === 'loading' && (
           <div role="status" aria-live="polite" aria-label={t('detail.loadingDetail')}>
             <CredentialDetailSkeleton />
           </div>
         )}
 
-        {state.phase === 'error' && (
+        {credentialSource.status === 'ready' && state.phase === 'error' && (
           <StatePanel
             icon={<AlertCircle className="size-6" />}
             title={t('detail.error.title')}
@@ -180,7 +204,7 @@ export function CredentialDetailView({ id }: CredentialDetailViewProps) {
           />
         )}
 
-        {state.phase === 'notFound' && (
+        {credentialSource.status === 'ready' && state.phase === 'notFound' && (
           <StatePanel
             icon={<FileQuestion className="size-6" />}
             title={t('detail.notFound.title')}
@@ -196,7 +220,7 @@ export function CredentialDetailView({ id }: CredentialDetailViewProps) {
           />
         )}
 
-        {state.phase === 'ready' && (
+        {credentialSource.status === 'ready' && state.phase === 'ready' && (
           <CredentialDetailContent
             credential={state.credential}
             statusLabel={statusLabel}

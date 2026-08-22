@@ -137,9 +137,13 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
         // here, not by the contract. The owner (G… address) the vault is keyed by
         // is derived from the presentation's holder did:stellar.
         const owner = parseDidStellar(presentation.holder)?.address ?? null;
+        // owner === null means the presentation's holder DID could not be parsed
+        // into a Stellar address — getCredentialSource logs a loud warning and
+        // falls back to mock in that case. Still pass an options object (never
+        // call with zero arguments) so the no-bare-call regression check holds.
         const source = owner
           ? getCredentialSource({ owner, holderDid: presentation.holder, client: actaClient })
-          : getCredentialSource();
+          : getCredentialSource({ client: actaClient });
 
         const [profile, resolved] = await Promise.all([
           source.getProfileSummary(),

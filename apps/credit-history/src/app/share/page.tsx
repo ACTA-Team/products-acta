@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { getCredentialSource } from '@acta-products/acta';
 import { CreditCredential, CreditProfileSummary } from '@acta-products/acta/types';
 import {
   Card,
@@ -16,6 +15,7 @@ import {
   Input,
   CopyField,
   Badge,
+  StatePanel,
 } from '@acta-products/ui';
 import { useFormatter, useTranslations } from 'next-intl';
 import {
@@ -26,6 +26,7 @@ import {
   RefreshCw,
   FileText,
   CheckCircle2,
+  Wallet,
 } from 'lucide-react';
 import {
   createPresentationLink,
@@ -33,11 +34,14 @@ import {
   signPresentation,
 } from '@/lib/presentation-link';
 import { useSession } from '@/session/session-provider';
+import { useCredentialSource } from '@/lib/use-credential-source';
 import { getWalletConnector, resolveNetworkPassphrase } from '@/session/wallet-connector';
 
 export default function SharePage() {
   const t = useTranslations('share');
-  const { address, did } = useSession();
+  const tSession = useTranslations('session');
+  const { address, did, connect } = useSession();
+  const credentialSource = useCredentialSource();
   const format = useFormatter();
   const [credentials, setCredentials] = React.useState<CreditCredential[]>([]);
   const [profile, setProfile] = React.useState<CreditProfileSummary | null>(null);
@@ -57,12 +61,15 @@ export default function SharePage() {
   const [isGenerating, setIsGenerating] = React.useState(false);
 
   React.useEffect(() => {
+    // Nothing to fetch while disconnected — the render below shows the
+    // connect prompt before ever looking at `loading` in that case.
+    if (credentialSource.status !== 'ready') return;
+
     const loadData = async () => {
       try {
-        const source = getCredentialSource();
         const [creds, prof] = await Promise.all([
-          source.listCredentials(),
-          source.getProfileSummary(),
+          credentialSource.source.listCredentials(),
+          credentialSource.source.getProfileSummary(),
         ]);
         setCredentials(creds);
         setProfile(prof);
@@ -75,7 +82,7 @@ export default function SharePage() {
       }
     };
     loadData();
-  }, []);
+  }, [credentialSource]);
 
   const handleToggleCredential = (id: string) => {
     setSelectedIds((prev) =>
@@ -161,6 +168,28 @@ export default function SharePage() {
     setExpPreset('1d');
     setCustomExpDate('');
   };
+
+  if (credentialSource.status === 'disconnected') {
+    return (
+      <section className="flex-1 w-full max-w-4xl mx-auto px-4 py-12 md:py-16">
+        <StatePanel
+          icon={<Wallet className="size-6" />}
+          title={t('connect.title')}
+          description={t('connect.description')}
+          action={
+            <Button
+              size="sm"
+              className="cursor-pointer gap-1.5"
+              onClick={() => connect().catch(console.error)}
+            >
+              <Wallet className="size-3.5" />
+              {tSession('connect')}
+            </Button>
+          }
+        />
+      </section>
+    );
+  }
 
   if (loading) {
     return (
