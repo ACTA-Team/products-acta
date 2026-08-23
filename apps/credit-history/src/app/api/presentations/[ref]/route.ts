@@ -6,6 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { verifyPresentationProof } from '@acta-products/acta/presentation';
 import { resolveStoredPresentation } from '@/lib/presentation-store';
 
 export const runtime = 'nodejs';
@@ -31,8 +32,15 @@ export async function GET(
     );
   }
 
+  // Verified here rather than in the (client) verifier view: `Keypair.verify`
+  // needs Node crypto primitives this route already runs with
+  // (`runtime = 'nodejs'`), and verification never has to ship into a browser
+  // bundle this way. This is purely an attribution check — it never affects
+  // credential status, which the client still reads from the vault directly.
+  const proof = await verifyPresentationProof(resolution.presentation);
+
   return NextResponse.json(
-    { presentation: resolution.presentation },
+    { presentation: resolution.presentation, proof },
     { status: 200, headers: NO_STORE }
   );
 }

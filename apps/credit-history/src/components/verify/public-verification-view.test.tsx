@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import type { CreditCredential, CreditProfileSummary } from '@acta-products/acta/types';
-import { buildPresentation } from '@acta-products/acta/presentation';
+import { buildPresentation, type ProofVerification } from '@acta-products/acta/presentation';
 import { renderWithIntl } from '@/test/render-with-intl';
 
 const { getCredential, getProfileSummary, resolvePresentationRef } = vi.hoisted(() => ({
@@ -50,6 +50,25 @@ const PROFILE: CreditProfileSummary = {
 
 const REF = 'a'.repeat(43);
 
+const UNSIGNED: ProofVerification = { status: 'unsigned' };
+
+/** Convenience for a resolved 'ok' mock — defaults to `unsigned` proof so tests
+ * that don't care about attribution don't have to spell it out every time. */
+function okResolution(
+  overrides: Partial<{ holder: string; credentialIds: string[]; expiresAt: number | null }> = {},
+  proof: ProofVerification = UNSIGNED
+) {
+  return {
+    status: 'ok' as const,
+    presentation: buildPresentation({
+      holder: overrides.holder ?? HOLDER,
+      credentialIds: overrides.credentialIds ?? ['cred-income'],
+      expiresAt: overrides.expiresAt ?? null,
+    }),
+    proof,
+  };
+}
+
 /** Resolve the mock source's getCredential by id, mirroring vault-by-id lookup. */
 function credentialsById(...credentials: CreditCredential[]) {
   const byId = new Map(credentials.map((c) => [c.id, c]));
@@ -90,14 +109,7 @@ describe('PublicVerificationView', () => {
   });
 
   it('renders the verified report for a live reference', async () => {
-    resolvePresentationRef.mockResolvedValue({
-      status: 'ok',
-      presentation: buildPresentation({
-        holder: HOLDER,
-        credentialIds: ['cred-income'],
-        expiresAt: Date.now() + 3_600_000,
-      }),
-    });
+    resolvePresentationRef.mockResolvedValue(okResolution({ expiresAt: Date.now() + 3_600_000 }));
 
     renderWithIntl(<PublicVerificationView token={REF} />);
 
@@ -107,14 +119,7 @@ describe('PublicVerificationView', () => {
   });
 
   it('verifies each shared credential by id against the vault', async () => {
-    resolvePresentationRef.mockResolvedValue({
-      status: 'ok',
-      presentation: buildPresentation({
-        holder: HOLDER,
-        credentialIds: ['cred-income'],
-        expiresAt: null,
-      }),
-    });
+    resolvePresentationRef.mockResolvedValue(okResolution());
 
     renderWithIntl(<PublicVerificationView token={REF} />);
 
@@ -125,14 +130,7 @@ describe('PublicVerificationView', () => {
 
   it('reflects a revoked on-chain status in the overall banner', async () => {
     credentialsById({ ...CREDENTIAL, status: 'revoked' });
-    resolvePresentationRef.mockResolvedValue({
-      status: 'ok',
-      presentation: buildPresentation({
-        holder: HOLDER,
-        credentialIds: ['cred-income'],
-        expiresAt: null,
-      }),
-    });
+    resolvePresentationRef.mockResolvedValue(okResolution());
 
     renderWithIntl(<PublicVerificationView token={REF} />);
 
@@ -143,14 +141,7 @@ describe('PublicVerificationView', () => {
     // The vault has no record of this id → not verifiable → invalid, not a
     // partial "valid" report.
     credentialsById();
-    resolvePresentationRef.mockResolvedValue({
-      status: 'ok',
-      presentation: buildPresentation({
-        holder: HOLDER,
-        credentialIds: ['cred-missing'],
-        expiresAt: null,
-      }),
-    });
+    resolvePresentationRef.mockResolvedValue(okResolution({ credentialIds: ['cred-missing'] }));
 
     renderWithIntl(<PublicVerificationView token={REF} />);
 
@@ -159,5 +150,53 @@ describe('PublicVerificationView', () => {
 
   it('never puts credential data in the shared reference', () => {
     expect(REF).not.toContain('cred-income');
+  });
+
+  describe('holder proof attribution', () => {
+    const BANNER_VALID_DESCRIPTION =
+      "This presentation's credentials are cryptographically verified against the issuer and are currently valid.";
+
+    it('renders the signed state distinctly from credential status', async () => {
+      resolvePresentationRef.mockResolvedValue(okResolution({}, { status: 'signed' }));
+
+      renderWithIntl(<PublicVerificationView token={REF} />);
+
+      expect(await screen.findByText('Verifiable presentation report')).toBeInTheDocument();
+      expect(screen.getByText('Presented by the holder')).toBeInTheDocument();
+      // Credential validity is unaffected by / independent of attribution.
+      expect(screen.getByText('Verified & valid')).toBeInTheDocument();
+    });
+
+    it('renders the unsigned state as a neutral note, not a warning, without the banner overclaiming attribution', async () => {
+      resolvePresentationRef.mockResolvedValue(okResolution({}, { status: 'unsigned' }));
+
+      renderWithIntl(<PublicVerificationView token={REF} />);
+
+      expect(await screen.findByText('Verifiable presentation report')).toBeInTheDocument();
+      expect(screen.getByText('Attribution not available')).toBeInTheDocument();
+      // Unsigned must never be conflated with the credential-invalid state.
+      expect(screen.queryByText('Invalid or expired presentation')).not.toBeInTheDocument();
+      // The credential banner must describe credential validity only — it
+      // must not claim the presentation "matches the holder" when there is
+      // no proof to back that up.
+      expect(screen.getByText(BANNER_VALID_DESCRIPTION)).toBeInTheDocument();
+    });
+
+    it('renders a prominent mismatch warning while keeping credential status visible and the banner not overclaiming attribution', async () => {
+      resolvePresentationRef.mockResolvedValue(
+        okResolution({}, { status: 'mismatch', reason: 'signature' })
+      );
+
+      renderWithIntl(<PublicVerificationView token={REF} />);
+
+      expect(await screen.findByText('Verifiable presentation report')).toBeInTheDocument();
+      expect(screen.getByText('Attribution could not be verified')).toBeInTheDocument();
+      // The on-chain credential statuses stay visible alongside the warning.
+      expect(screen.getByText('Verified & valid')).toBeInTheDocument();
+      expect(screen.getByText('Anchor Payroll Income')).toBeInTheDocument();
+      // Same overclaiming check as the unsigned case — a signature mismatch
+      // must not be masked by a banner that still claims holder attribution.
+      expect(screen.getByText(BANNER_VALID_DESCRIPTION)).toBeInTheDocument();
+    });
   });
 });

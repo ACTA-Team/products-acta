@@ -61,5 +61,6 @@ export {
   Stub as StatePanel,
   Stub as StatusBadge,
   Stub as VerificationBanner,
+  Stub as AttributionNote,
   Button,
 };

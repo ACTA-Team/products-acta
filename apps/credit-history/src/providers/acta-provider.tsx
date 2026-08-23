@@ -3,8 +3,6 @@
 import { ActaConfig, mainNet, testNet } from '@acta-products/acta';
 import type { baseURL } from '@acta-products/acta';
 
-
-
 // The acta package does not export the StellarNetwork type — declare it locally.
 type StellarNetwork = 'mainnet' | 'testnet';
 

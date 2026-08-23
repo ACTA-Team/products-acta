@@ -1,5 +1,7 @@
+import { Keypair } from '@stellar/stellar-sdk';
 import { describe, expect, it } from 'vitest';
-import type { BuildPresentationInput } from './presentation';
+import { didStellar } from './did';
+import type { BuildPresentationInput, PresentationProof } from './presentation';
 import {
   attachPresentationProof,
   buildPresentation,
@@ -9,6 +11,8 @@ import {
   MAX_PRESENTATION_CREDENTIALS,
   presentationDigest,
   presentationExpiresAt,
+  sep0053MessageHash,
+  verifyPresentationProof,
 } from './presentation';
 
 const HOLDER = 'did:stellar:testnet:GHOLDER';
@@ -110,6 +114,163 @@ describe('canonicalPresentationPayload', () => {
     const tampered = { ...base, expires: new Date(NOW + 999_999).toISOString() };
 
     expect(await presentationDigest(tampered)).not.toBe(await presentationDigest(base));
+  });
+});
+
+describe('sep0053MessageHash', () => {
+  // Official test vectors from the SEP-0053 spec itself, so this checks our
+  // implementation against the standard — not just internal round-trip
+  // consistency — which is what makes a real wallet's signature (Freighter /
+  // Stellar Wallets Kit, both SEP-0053-compliant) actually verify.
+  // https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md
+  const SEED = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+  const ADDRESS = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
+
+  it.each([
+    [
+      'Hello, World!',
+      'fO5dbYhXUhBMhe6kId/cuVq/AfEnHRHEvsP8vXh03M1uLpi5e46yO2Q8rEBzu3feXQewcQE5GArp88u6ePK6BA==',
+    ],
+    [
+      'こんにちは、世界！',
+      'CDU265Xs8y3OWbB/56H9jPgUss5G9A0qFuTqH2zs2YDgTm+++dIfmAEceFqB7bhfN3am59lCtDXrCtwH2k1GBA==',
+    ],
+  ])('reproduces the spec signature for %j', async (message, expectedSignature) => {
+    const hash = await sep0053MessageHash(message);
+    const signer = Keypair.fromSecret(SEED);
+
+    expect(signer.sign(Buffer.from(hash)).toString('base64')).toBe(expectedSignature);
+    expect(
+      Keypair.fromPublicKey(ADDRESS).verify(
+        Buffer.from(hash),
+        Buffer.from(expectedSignature, 'base64')
+      )
+    ).toBe(true);
+  });
+});
+
+describe('verifyPresentationProof', () => {
+  const keypair = Keypair.random();
+  const otherKeypair = Keypair.random();
+  const signerHolder = didStellar('testnet', keypair.publicKey());
+
+  /** Signs `digest` the way a SEP-0053-compliant `signMessage` implementation
+   * (Freighter / Stellar Wallets Kit) does — over the SEP-0053 preimage hash,
+   * not the raw digest bytes. */
+  async function signDigest(signer: Keypair, digest: string): Promise<string> {
+    const hash = await sep0053MessageHash(digest);
+    return signer.sign(Buffer.from(hash)).toString('base64');
+  }
+
+  async function buildSignedPresentation(
+    overrides: Partial<PresentationProof> = {}
+  ): Promise<ReturnType<typeof buildPresentation>> {
+    const vp = buildPresentation({
+      holder: signerHolder,
+      credentialIds: ['cred-a'],
+      expiresAt: null,
+      createdAt: NOW,
+    });
+    const digest = await presentationDigest(vp);
+
+    return attachPresentationProof(vp, {
+      type: 'StellarWalletSignature2026',
+      created: new Date(NOW).toISOString(),
+      verificationMethod: signerHolder,
+      digest,
+      signature: await signDigest(keypair, digest),
+      ...overrides,
+    });
+  }
+
+  it('reports unsigned when no proof is attached', async () => {
+    const vp = buildPresentation({ holder: signerHolder, credentialIds: ['a'], expiresAt: null });
+    expect(await verifyPresentationProof(vp)).toEqual({ status: 'unsigned' });
+  });
+
+  it('verifies a round-trip signed presentation as signed', async () => {
+    const signed = await buildSignedPresentation();
+    expect(await verifyPresentationProof(signed)).toEqual({ status: 'signed' });
+  });
+
+  it('reports a digest mismatch when the presentation is tampered with after signing', async () => {
+    const signed = await buildSignedPresentation();
+    const tampered = { ...signed, verifiableCredential: ['cred-a', 'cred-injected'] };
+
+    expect(await verifyPresentationProof(tampered)).toEqual({
+      status: 'mismatch',
+      reason: 'digest',
+    });
+  });
+
+  it('reports a signature mismatch when the proof was produced by a different key', async () => {
+    const vp = buildPresentation({
+      holder: signerHolder,
+      credentialIds: ['cred-a'],
+      expiresAt: null,
+      createdAt: NOW,
+    });
+    const digest = await presentationDigest(vp);
+    const signed = attachPresentationProof(vp, {
+      type: 'StellarWalletSignature2026',
+      created: new Date(NOW).toISOString(),
+      verificationMethod: signerHolder,
+      digest,
+      signature: await signDigest(otherKeypair, digest),
+    });
+
+    expect(await verifyPresentationProof(signed)).toEqual({
+      status: 'mismatch',
+      reason: 'signature',
+    });
+  });
+
+  it('reports a holder mismatch when verificationMethod is not the presentation holder', async () => {
+    const impersonatedHolder = didStellar('testnet', otherKeypair.publicKey());
+    const signed = await buildSignedPresentation({ verificationMethod: impersonatedHolder });
+
+    expect(await verifyPresentationProof(signed)).toEqual({
+      status: 'mismatch',
+      reason: 'holder',
+    });
+  });
+
+  it('reports malformed for a proof with an unparsable holder DID', async () => {
+    const vp = buildPresentation({
+      holder: 'not-a-did',
+      credentialIds: ['cred-a'],
+      expiresAt: null,
+      createdAt: NOW,
+    });
+    const digest = await presentationDigest(vp);
+    const signed = attachPresentationProof(vp, {
+      type: 'StellarWalletSignature2026',
+      created: new Date(NOW).toISOString(),
+      verificationMethod: 'not-a-did',
+      digest,
+      signature: await signDigest(keypair, digest),
+    });
+
+    expect(await verifyPresentationProof(signed)).toEqual({
+      status: 'mismatch',
+      reason: 'malformed',
+    });
+  });
+
+  it('reports malformed for empty proof fields rather than throwing', async () => {
+    const signed = await buildSignedPresentation({ signature: '' });
+    expect(await verifyPresentationProof(signed)).toEqual({
+      status: 'mismatch',
+      reason: 'malformed',
+    });
+  });
+
+  it('never lets an unattributed (unsigned) presentation read as invalid', async () => {
+    // unsigned is a distinct status from mismatch — callers must not collapse
+    // the two, since an unsigned link is still legitimate.
+    const vp = buildPresentation({ holder: signerHolder, credentialIds: ['a'], expiresAt: null });
+    const result = await verifyPresentationProof(vp);
+    expect(result.status).not.toBe('mismatch');
   });
 });
 

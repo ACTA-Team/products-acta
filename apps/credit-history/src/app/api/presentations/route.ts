@@ -9,11 +9,13 @@
 
 import { NextResponse } from 'next/server';
 import {
+  buildPresentation,
   InvalidPresentationError,
+  presentationDigest,
   presentationExpiresAt,
   type PresentationProof,
 } from '@acta-products/acta/presentation';
-import { createStoredPresentation } from '@/lib/presentation-store';
+import { createStoredPresentation, MAX_CREATED_AT_DRIFT_MS } from '@/lib/presentation-store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,24 +28,78 @@ interface CreateRequestBody {
   proof?: unknown;
 }
 
-function parseProof(raw: unknown): PresentationProof | undefined {
-  if (typeof raw !== 'object' || raw === null) return undefined;
+/** Sane upper bound on proof field lengths — mirrors the one in presentation.ts. */
+const MAX_PROOF_FIELD_LENGTH = 4096;
+
+class MalformedProofError extends Error {}
+
+/**
+ * Structurally validate a proof and, when the shape checks out, verify it
+ * actually matches the presentation the server is about to persist: the
+ * digest must match what the server independently recomputes from
+ * `holder`/`credentialIds`/`expiresAt`/`createdAt`, and `verificationMethod`
+ * must equal `holder`. A proof that fails either check can never verify later
+ * either — it must never be persisted, so callers should map
+ * `MalformedProofError` to a 400 rather than silently dropping the proof and
+ * storing the presentation unsigned.
+ *
+ * (Signature validity itself is intentionally NOT checked here —
+ * `verifyPresentationProof` does that at read time. This only rejects proofs
+ * that are provably inconsistent with the presentation being created.)
+ */
+async function parseProof(
+  raw: unknown,
+  expected: { holder: string; credentialIds: string[]; expiresAt: number | null; createdAt: number }
+): Promise<PresentationProof | undefined> {
+  if (raw === undefined) return undefined;
+  if (typeof raw !== 'object' || raw === null) {
+    throw new MalformedProofError('proof must be an object.');
+  }
   const proof = raw as Record<string, unknown>;
 
+  const fields = [proof.digest, proof.signature, proof.verificationMethod];
   if (
-    typeof proof.digest !== 'string' ||
-    typeof proof.signature !== 'string' ||
-    typeof proof.verificationMethod !== 'string'
+    fields.some((f) => typeof f !== 'string' || f.length === 0 || f.length > MAX_PROOF_FIELD_LENGTH)
   ) {
-    return undefined;
+    throw new MalformedProofError(
+      'proof.digest, proof.signature and proof.verificationMethod must be non-empty strings within length bounds.'
+    );
+  }
+  const created = proof.created;
+  if (
+    created !== undefined &&
+    (typeof created !== 'string' ||
+      created.length === 0 ||
+      created.length > MAX_PROOF_FIELD_LENGTH ||
+      !Number.isFinite(Date.parse(created)))
+  ) {
+    throw new MalformedProofError(
+      'proof.created must be a bounded, parseable ISO timestamp when present.'
+    );
+  }
+
+  const digest = proof.digest as string;
+  const signature = proof.signature as string;
+  const verificationMethod = proof.verificationMethod as string;
+
+  if (verificationMethod !== expected.holder) {
+    throw new MalformedProofError('proof.verificationMethod must match the presentation holder.');
+  }
+
+  const expectedDigest = await presentationDigest(buildPresentation(expected));
+  if (digest !== expectedDigest) {
+    throw new MalformedProofError('proof.digest does not match the presentation being created.');
   }
 
   return {
     type: 'StellarWalletSignature2026',
-    created: typeof proof.created === 'string' ? proof.created : new Date().toISOString(),
-    verificationMethod: proof.verificationMethod,
-    digest: proof.digest,
-    signature: proof.signature,
+    // Default to the presentation's own createdAt rather than the server's
+    // "now" at proof-validation time, so an unspecified `created` stays
+    // consistent with the rest of the persisted object.
+    created: created ?? new Date(expected.createdAt).toISOString(),
+    verificationMethod,
+    digest,
+    signature,
   };
 }
 
@@ -80,13 +136,40 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
+  // Resolved once and reused for both the digest recomputation below and the
+  // actual persisted presentation, so a proof signed against "now" on the
+  // client can't drift from what the server rebuilds server-side.
+  const resolvedCreatedAt = createdAt ?? Date.now();
+  if (Math.abs(Date.now() - resolvedCreatedAt) > MAX_CREATED_AT_DRIFT_MS) {
+    return NextResponse.json(
+      { error: 'createdAt is too far from the server clock.' },
+      { status: 400 }
+    );
+  }
+
+  let proof: PresentationProof | undefined;
+  try {
+    proof = await parseProof(body.proof, {
+      holder,
+      credentialIds: credentialIds as string[],
+      expiresAt,
+      createdAt: resolvedCreatedAt,
+    });
+  } catch (err) {
+    if (err instanceof MalformedProofError || err instanceof InvalidPresentationError) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+    console.error('Failed to validate presentation proof', err);
+    return NextResponse.json({ error: 'Could not create the presentation.' }, { status: 500 });
+  }
+
   try {
     const { ref, presentation } = await createStoredPresentation({
       holder,
       credentialIds: credentialIds as string[],
       expiresAt,
-      createdAt,
-      proof: parseProof(body.proof),
+      createdAt: resolvedCreatedAt,
+      proof,
     });
 
     return NextResponse.json(

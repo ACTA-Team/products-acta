@@ -1,25 +1,5 @@
-/**
- * @fileoverview Verifiable Presentation model for ACTA share links.
- *
- * Replaces the plaintext base64url token that used to carry `{ ids, exp }` in
- * the URL. A presentation is now a W3C-shaped object built here, signed by the
- * holder (see `attachPresentationProof`) and persisted server-side; the share
- * URL only carries an opaque reference to it.
- *
- * The presentation deliberately references credentials by id only — the claims
- * themselves are never part of the shared object. The resolving side re-reads
- * them from the holder's ACTA vault, so a share link can never leak credential
- * data on its own.
- *
- * NOTE ON PERSISTENCE:
- * `@acta-team/credentials` exposes its client exclusively through the
- * `useActaClient()` React hook, so it cannot be constructed on a server
- * runtime. Persistence therefore lives behind the `PresentationStore`
- * interface below; the product wires the concrete store (see
- * `apps/credit-history/src/lib/presentation-store.ts`). When the SDK exposes a
- * non-hook client or a dedicated off-chain payload endpoint, swap the store
- * implementation — nothing else in this file changes.
- */
+import { Keypair } from '@stellar/stellar-sdk';
+import { parseDidStellar } from './did';
 
 /** W3C VC Data Model v2 context, the same one `vcIssue` requires for vcData. */
 export const PRESENTATION_CONTEXT = 'https://www.w3.org/ns/credentials/v2';
@@ -30,9 +10,12 @@ export const PRESENTATION_TYPE = 'VerifiablePresentation';
  * Holder proof over the canonical presentation payload.
  *
  * `signature` is produced by the connected wallet (Freighter / Stellar Wallets
- * Kit). It is stored alongside the presentation and surfaced to the verifier;
- * cryptographic validation of the signature against the holder's did:stellar
- * key belongs to the public verification flow (#40).
+ * Kit) via its arbitrary-message signing primitive (`signMessage`, not
+ * `signTransaction` — the digest is not a Stellar XDR envelope). It is stored
+ * alongside the presentation and surfaced to the verifier; cryptographic
+ * validation against the holder's `did:stellar` key is `verifyPresentationProof`
+ * below, exercised by `/api/presentations/[ref]` as part of the public
+ * verification flow (#40).
  */
 export interface PresentationProof {
   type: 'StellarWalletSignature2026';
@@ -176,6 +159,124 @@ export function attachPresentationProof(
   proof: PresentationProof
 ): VerifiablePresentation {
   return { ...presentation, proof };
+}
+
+/**
+ * SEP-0053 preimage prefix. Fixed by the spec — never change this.
+ * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md
+ */
+const SEP0053_PREFIX = 'Stellar Signed Message:\n';
+
+/**
+ * The exact digest a SEP-0053-compliant `signMessage` implementation signs:
+ * `SHA-256("Stellar Signed Message:\n" + message)`, UTF-8 throughout. This is
+ * NOT the same as hashing `message` alone — the fixed prefix is what makes a
+ * signed message unambiguously distinct from a signed transaction envelope
+ * and prevents cross-protocol replay, per the SEP's own rationale.
+ *
+ * Uses Web Crypto (`globalThis.crypto.subtle`) rather than Node's `crypto`
+ * module so this stays isomorphic — `presentationDigest` above already
+ * depends on the same API, and this function needs to be callable from
+ * `signPresentation` on the client as well as `verifyPresentationProof` on
+ * the server.
+ */
+export async function sep0053MessageHash(message: string): Promise<Uint8Array> {
+  const bytes = new TextEncoder().encode(SEP0053_PREFIX + message);
+  const hash = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+  return new Uint8Array(hash);
+}
+
+/**
+ * Result of checking a presentation's holder proof.
+ *
+ * `unsigned` and `mismatch` are deliberately distinct: `unsigned` means the
+ * holder never attempted (or could not produce) a proof — the presentation is
+ * still a legitimate, tamper-evident link. `mismatch` means a proof is
+ * present but fails verification, which is the state a verifier should treat
+ * with suspicion.
+ */
+export type ProofVerification =
+  | { status: 'signed' }
+  | { status: 'unsigned' }
+  | { status: 'mismatch'; reason: 'digest' | 'signature' | 'holder' | 'malformed' };
+
+/** Sane upper bound on proof field lengths, shared with API-side validation. */
+const MAX_PROOF_FIELD_LENGTH = 4096;
+
+function isWellFormedProof(proof: PresentationProof): boolean {
+  return (
+    typeof proof.digest === 'string' &&
+    typeof proof.signature === 'string' &&
+    typeof proof.verificationMethod === 'string' &&
+    proof.digest.length > 0 &&
+    proof.digest.length <= MAX_PROOF_FIELD_LENGTH &&
+    proof.signature.length > 0 &&
+    proof.signature.length <= MAX_PROOF_FIELD_LENGTH &&
+    proof.verificationMethod.length > 0 &&
+    proof.verificationMethod.length <= MAX_PROOF_FIELD_LENGTH
+  );
+}
+
+/**
+ * Cryptographically verify a presentation's holder proof, in the order the
+ * threat model requires:
+ *
+ *   1. Recompute the digest from the (proof-excluded) canonical payload and
+ *      compare it to `proof.digest` — catches any edit to the presentation
+ *      after it was signed, including a tampered `verifiableCredential` list
+ *      or `expires` value.
+ *   2. Check `proof.verificationMethod === presentation.holder` — the proof
+ *      must claim to speak for the same identity the presentation is shared
+ *      under, not some other key.
+ *   3. Decode the ed25519 public key from the holder's `did:stellar` and
+ *      verify `signature` over `digest` with it.
+ *
+ * Must run server-side: `Keypair.verify` takes Node `Buffer`s, and this
+ * function is not meant to ship into the public verifier's client bundle.
+ */
+export async function verifyPresentationProof(
+  presentation: VerifiablePresentation
+): Promise<ProofVerification> {
+  const { proof } = presentation;
+
+  if (!proof) {
+    return { status: 'unsigned' };
+  }
+
+  if (!isWellFormedProof(proof)) {
+    return { status: 'mismatch', reason: 'malformed' };
+  }
+
+  const expectedDigest = await presentationDigest(presentation);
+  if (proof.digest !== expectedDigest) {
+    return { status: 'mismatch', reason: 'digest' };
+  }
+
+  if (proof.verificationMethod !== presentation.holder) {
+    return { status: 'mismatch', reason: 'holder' };
+  }
+
+  const parsedHolder = parseDidStellar(presentation.holder);
+  if (!parsedHolder) {
+    return { status: 'mismatch', reason: 'malformed' };
+  }
+
+  let verified: boolean;
+  try {
+    const keypair = Keypair.fromPublicKey(parsedHolder.address);
+    // What the wallet actually signed is the SEP-0053 preimage of the
+    // digest string — not the digest's raw UTF-8 bytes. See the file-level
+    // note above.
+    const messageHash = await sep0053MessageHash(proof.digest);
+    const signature = Buffer.from(proof.signature, 'base64');
+    verified = signature.length > 0 && keypair.verify(Buffer.from(messageHash), signature);
+  } catch {
+    // A malformed G… address (bad checksum/length) or non-base64 signature
+    // lands here — it can never verify, so it's a mismatch, not a crash.
+    return { status: 'mismatch', reason: 'malformed' };
+  }
+
+  return verified ? { status: 'signed' } : { status: 'mismatch', reason: 'signature' };
 }
 
 /** Expiration as epoch milliseconds, or null when the presentation never expires. */

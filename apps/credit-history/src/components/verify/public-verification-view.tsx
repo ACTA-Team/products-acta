@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { getCredentialSource, parseDidStellar, useActaClient } from '@acta-products/acta';
 import type { CreditCredential, CreditProfileSummary } from '@acta-products/acta/types';
+import type { ProofVerification } from '@acta-products/acta/presentation';
 import {
+  AttributionNote,
   Button,
   Card,
   CardContent,
@@ -16,6 +18,7 @@ import {
   StatePanel,
   StatusBadge,
   VerificationBanner,
+  type AttributionStatus,
   type CredentialStatusKind,
 } from '@acta-products/ui';
 import { ShieldAlert } from 'lucide-react';
@@ -37,6 +40,7 @@ type LoadState =
       credentials: CreditCredential[];
       profile: CreditProfileSummary;
       expirationDate: Date | null;
+      proof: ProofVerification;
     };
 
 function VerificationSkeleton() {
@@ -71,6 +75,30 @@ function useStatusLabel() {
 function overallPresentationStatus(credentials: CreditCredential[]): CredentialStatusKind {
   if (credentials.some((c) => c.status === 'revoked')) return 'revoked';
   return 'valid';
+}
+
+function useAttributionCopy() {
+  const t = useTranslations('verify.attribution');
+
+  return (
+    proof: ProofVerification
+  ): { status: AttributionStatus; title: string; description: string } => {
+    if (proof.status === 'signed') {
+      return { status: 'signed', title: t('title'), description: t('description') };
+    }
+    if (proof.status === 'unsigned') {
+      return {
+        status: 'unsigned',
+        title: t('unsignedTitle'),
+        description: t('unsignedDescription'),
+      };
+    }
+    return {
+      status: 'mismatch',
+      title: t('mismatchTitle'),
+      description: t('mismatchDescription'),
+    };
+  };
 }
 
 interface PublicVerificationViewProps {
@@ -125,7 +153,7 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
         return;
       }
 
-      const { presentation } = resolution;
+      const { presentation, proof } = resolution;
       const expiresAt = presentation.expires ? Date.parse(presentation.expires) : null;
       const expirationDate = expiresAt === null ? null : new Date(expiresAt);
 
@@ -168,6 +196,10 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
             // presentation was created (and proved) under.
             profile: { ...profile, holderDid: presentation.holder || profile.holderDid },
             expirationDate,
+            // Attribution is verified server-side (see /api/presentations/[ref])
+            // and never influences credential status — it's rendered as an
+            // independent signal below.
+            proof,
           });
         }
       } catch (err) {
@@ -234,6 +266,11 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
                   : t('banner.valid.description')
               }
             />
+
+            <div className="flex flex-col gap-2">
+              <AttributionSection proof={state.proof} />
+              <p className="px-1 text-xs text-muted-foreground">{t('attribution.whatThisMeans')}</p>
+            </div>
 
             <header className="flex flex-col gap-4 border-b border-border/80 pb-6 md:flex-row md:items-end md:justify-between">
               <div className="flex flex-col gap-1">
@@ -312,6 +349,12 @@ interface VerifiedCredentialCardProps {
   formatOptions: { yesLabel: string; noLabel: string };
   tCredentials: ReturnType<typeof useTranslations<'credentials'>>;
   claimsLabel: string;
+}
+
+function AttributionSection({ proof }: { proof: ProofVerification }) {
+  const attributionCopy = useAttributionCopy();
+  const { status, title, description } = attributionCopy(proof);
+  return <AttributionNote status={status} title={title} description={description} />;
 }
 
 function VerifiedCredentialCard({

@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@acta-products/types": "workspace:*",
-    "@acta-team/credentials": "^1.1.4"
+    "@acta-team/credentials": "^1.1.4",
+    "@stellar/stellar-sdk": "^15.1.0"
   },
   "peerDependencies": {
     "react": "^19",
