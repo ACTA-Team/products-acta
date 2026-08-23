@@ -240,24 +240,53 @@ function resolveMockMode(): MockMode {
   return 'normal';
 }
 
-export function getCredentialSource(options?: MockSourceOptions): CreditCredentialSource {
-  const dataSource = process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock';
+export type DataSourceMode = 'mock' | 'real';
 
-  if (dataSource === 'real' && options?.owner) {
-    return new ActaCredentialSource({
-      owner: options.owner,
-      holderDid: options.holderDid,
-      client: options.client,
-    });
-  }
-
-  if (dataSource !== 'mock' && dataSource !== 'real') {
+/**
+ * Resolves NEXT_PUBLIC_DATA_SOURCE, defaulting an unset or unrecognised value
+ * to 'mock'. Exported so app-level code (see useCredentialSource() in
+ * apps/credit-history) can gate session requirements on the same value
+ * getCredentialSource() uses, instead of re-deriving the env parsing here.
+ */
+export function getDataSourceMode(): DataSourceMode {
+  const raw = process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock';
+  if (raw !== 'mock' && raw !== 'real') {
     console.warn(
-      `[getCredentialSource] Unrecognised NEXT_PUBLIC_DATA_SOURCE="${dataSource}". Falling back to mock.`
+      `[getCredentialSource] Unrecognised NEXT_PUBLIC_DATA_SOURCE="${raw}". Falling back to mock.`
+    );
+    return 'mock';
+  }
+  return raw;
+}
+
+/**
+ * Contract:
+ *  - dataSource === 'real' AND options.owner is set  -> real ActaCredentialSource.
+ *  - anything else (dataSource === 'mock', or 'real' with no owner)         -> mock.
+ *
+ * Mock is a *dev-only* fallback, never a legitimate real-mode path. A
+ * real-mode call with no owner (e.g. a session that isn't connected yet, or
+ * a holder DID that couldn't be parsed) is always a bug or an unauthenticated
+ * edge case that must be handled by the caller — it must never resolve
+ * silently. `useCredentialSource()` (apps/credit-history/src/lib) is the only
+ * sanctioned way UI surfaces obtain a source; it reports a 'disconnected'
+ * status instead of ever calling this function without an owner in real mode.
+ */
+export function getCredentialSource(options?: MockSourceOptions): CreditCredentialSource {
+  const dataSource = getDataSourceMode();
+
+  if (dataSource === 'real') {
+    if (options?.owner) {
+      return new ActaCredentialSource({
+        owner: options.owner,
+        holderDid: options.holderDid,
+        client: options.client,
+      });
+    }
+    console.warn(
+      '[getCredentialSource] NEXT_PUBLIC_DATA_SOURCE="real" but no owner was supplied — falling back to mock fixtures. This should never happen from session-gated UI; go through useCredentialSource() instead of calling getCredentialSource() directly.'
     );
   }
-  // dataSource === 'real' but no owner (e.g. share/verify pages, or session
-  // not yet connected) intentionally falls through to mock — see #36 PR notes.
 
   const mode = options?.mode ?? resolveMockMode();
   const delayMs = options?.delayMs ?? 120;

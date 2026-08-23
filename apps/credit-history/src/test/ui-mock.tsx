@@ -52,6 +52,7 @@ export function cn(...classes: unknown[]): string {
 export {
   Stub as Card,
   Stub as CardContent,
+  Stub as CardFooter,
   Stub as CardHeader,
   Stub as CategoryIcon,
   Stub as CopyField,

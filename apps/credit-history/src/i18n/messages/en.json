@@ -167,6 +167,10 @@
   "share": {
     "title": "Share Presentation",
     "subtitle": "Select credentials to generate a secure presentation link for lenders.",
+    "connect": {
+      "title": "Connect your wallet",
+      "description": "Connect your Stellar wallet to select credentials and generate a presentation link."
+    },
     "selectCredentials": "Select Credentials",
     "selectCredentialsDesc": "Only selected items will be encoded and shared in the presentation.",
     "expirationOptions": "Presentation Expiration",
