@@ -66,3 +66,27 @@ Related env vars:
 - `NEXT_PUBLIC_STELLAR_NETWORK` — `testnet` (default) or `mainnet`.
 - `NEXT_PUBLIC_MOCK_MODE` — `empty` or `error`, to exercise the empty/error
   states of the mock source; anything else behaves as `normal`.
+
+## `apps/credit-history`: share link persistence
+
+Share links (`/api/presentations`) are persisted through `PresentationStore`
+(`apps/credit-history/src/lib/presentation-store.ts`). The driver is chosen by
+`PRESENTATION_STORE_DRIVER`:
+
+- **`memory` (default, no env var needed)** — an in-process `Map`. Zero-config
+  for `pnpm dev`, but it does not survive a restart and is not shared between
+  serverless instances — fine for local development, not for a real deploy.
+- **`upstash-redis`** — durable, HTTP-based Redis (no persistent connection to
+  manage across serverless invocations) with native per-key TTL that mirrors
+  each link's expiration, so expired links free themselves without a cron job.
+  Requires:
+  - `UPSTASH_REDIS_REST_URL`
+  - `UPSTASH_REDIS_REST_TOKEN`
+
+  Provision a free database at [upstash.com](https://upstash.com), then copy
+  its REST URL/token from the database dashboard.
+
+A holder lists or revokes their own links (`/vault`) by signing an action
+message with their wallet — see `holderActionMessage()` in
+`presentation-store.ts`. Knowing a holder's DID is never enough on its own to
+list or revoke their links.

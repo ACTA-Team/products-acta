@@ -16,6 +16,7 @@
     "@acta-products/types": "workspace:*",
     "@acta-products/ui": "workspace:*",
     "@creit.tech/stellar-wallets-kit": "^2.5.0",
+    "@upstash/redis": "^1.35.5",
     "@stellar/stellar-sdk": "^15.1.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.3",

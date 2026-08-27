@@ -85,7 +85,30 @@
       "did": "Holder DID"
     },
     "noValue": "—",
-    "viewCredentials": "View all credentials"
+    "viewCredentials": "View all credentials",
+    "sharedLinks": {
+      "title": "Shared links",
+      "description": "Links you've created to share your credentials with verifiers.",
+      "loading": "Loading your shared links…",
+      "empty": {
+        "title": "No shared links yet",
+        "description": "Links you generate from the Share page will show up here so you can track and revoke them."
+      },
+      "error": {
+        "title": "Couldn't load your shared links",
+        "description": "Something went wrong while reading your shared links. Please try again.",
+        "retry": "Try again"
+      },
+      "created": "Created",
+      "expires": "Expires",
+      "credentialCount": "{count, plural, one {# credential} other {# credentials}}",
+      "revoked": "Revoked",
+      "revokedAt": "Revoked on {date, date, medium}",
+      "revoke": "Revoke",
+      "revoking": "Revoking…",
+      "revokeConfirm": "Revoke this link? Anyone holding it will immediately lose access.",
+      "revokeError": "The link could not be revoked. Please try again."
+    }
   },
   "credentials": {
     "title": "My Credentials",
@@ -237,7 +260,8 @@
     "invalid": {
       "title": "Presentation verification failed",
       "description": "The verification token could not be decrypted, decoded, or validated. Please request a new link from the credential owner.",
-      "expiredDescription": "This verification link expired on {date, date, medium} at {date, time, short}. Please request a new link from the credential owner."
+      "expiredDescription": "This verification link expired on {date, date, medium} at {date, time, short}. Please request a new link from the credential owner.",
+      "revokedDescription": "This verification link was revoked by the credential owner. Please request a new link from them."
     },
     "attribution": {
       "title": "Presented by the holder",

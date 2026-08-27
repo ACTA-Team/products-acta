@@ -23,6 +23,13 @@ vi.mock('@acta-products/acta', () => ({
 
 vi.mock('@/session/session-provider', () => ({ useSession }));
 
+// Shared links has its own dedicated test file — stub it here so this suite
+// stays focused on VaultView's own load/error/empty states and doesn't pull
+// in the wallet connector module (which this suite never mocks).
+vi.mock('@/components/vault/shared-links-section', () => ({
+  SharedLinksSection: () => null,
+}));
+
 import { VaultView } from './vault-view';
 
 const ADDRESS = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';

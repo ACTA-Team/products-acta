@@ -13,12 +13,68 @@ import {
   InvalidPresentationError,
   presentationDigest,
   presentationExpiresAt,
+  type HolderActionProof,
   type PresentationProof,
 } from '@acta-products/acta/presentation';
-import { createStoredPresentation, MAX_CREATED_AT_DRIFT_MS } from '@/lib/presentation-store';
+import {
+  createStoredPresentation,
+  listStoredPresentations,
+  MAX_CREATED_AT_DRIFT_MS,
+} from '@/lib/presentation-store';
+import { checkRateLimit, rateLimitKey } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+const NO_STORE = { 'Cache-Control': 'no-store' } as const;
+
+/** At most 20 new links per holder (or IP, when unauthenticated) every 10 minutes. */
+const CREATE_RATE_LIMIT = 20;
+const CREATE_RATE_WINDOW_MS = 10 * 60 * 1000;
+
+/**
+ * `GET /api/presentations?holder=<did>&timestamp=<ms>&signature=<base64>` —
+ * lists the links a holder created. `timestamp`/`signature` prove control of
+ * the holder key over `ACTA:presentations:list:{holder}:{timestamp}` (see
+ * `holderActionMessage` in `presentation-store.ts`); a DID alone is never
+ * enough to discover someone else's share links.
+ */
+export async function GET(request: Request): Promise<NextResponse> {
+  const { searchParams } = new URL(request.url);
+  const holder = searchParams.get('holder');
+  const timestampRaw = searchParams.get('timestamp');
+  const signature = searchParams.get('signature');
+
+  if (!holder || !timestampRaw || !signature) {
+    return NextResponse.json(
+      { error: 'holder, timestamp and signature query params are required.' },
+      { status: 400, headers: NO_STORE }
+    );
+  }
+
+  const timestamp = Number(timestampRaw);
+  if (!Number.isFinite(timestamp)) {
+    return NextResponse.json(
+      { error: 'timestamp must be a numeric epoch-milliseconds value.' },
+      { status: 400, headers: NO_STORE }
+    );
+  }
+
+  const proof: HolderActionProof = { holder, signature };
+  const result = await listStoredPresentations(holder, timestamp, proof);
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: `Could not authorise the request (${result.reason}).` },
+      {
+        status: 403,
+        headers: NO_STORE,
+      }
+    );
+  }
+
+  return NextResponse.json({ links: result.links }, { status: 200, headers: NO_STORE });
+}
 
 interface CreateRequestBody {
   holder?: unknown;
@@ -116,6 +172,21 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   if (typeof holder !== 'string' || holder.length === 0) {
     return NextResponse.json({ error: 'A holder DID is required.' }, { status: 400 });
+  }
+
+  const rateLimit = checkRateLimit(
+    rateLimitKey(request, holder),
+    CREATE_RATE_LIMIT,
+    CREATE_RATE_WINDOW_MS
+  );
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many links created recently. Please try again later.' },
+      {
+        status: 429,
+        headers: { ...NO_STORE, 'Retry-After': String(Math.ceil(rateLimit.retryAfterMs / 1000)) },
+      }
+    );
   }
 
   if (!Array.isArray(credentialIds)) {
