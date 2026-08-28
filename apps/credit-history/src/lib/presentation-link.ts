@@ -73,7 +73,8 @@ export async function createPresentationLink(
 export type PresentationResolution =
   | { status: 'ok'; presentation: VerifiablePresentation; proof: ProofVerification }
   | { status: 'not_found' }
-  | { status: 'expired'; expiresAt: number };
+  | { status: 'expired'; expiresAt: number }
+  | { status: 'revoked'; revokedAt: number };
 
 export async function resolvePresentationRef(ref: string): Promise<PresentationResolution> {
   let response: Response;
@@ -87,7 +88,14 @@ export async function resolvePresentationRef(ref: string): Promise<PresentationR
   }
 
   if (response.status === 410) {
-    const body = (await response.json().catch(() => ({}))) as { expiresAt?: number };
+    const body = (await response.json().catch(() => ({}))) as {
+      reason?: 'expired' | 'revoked';
+      expiresAt?: number;
+      revokedAt?: number;
+    };
+    if (body.reason === 'revoked') {
+      return { status: 'revoked', revokedAt: body.revokedAt ?? 0 };
+    }
     return { status: 'expired', expiresAt: body.expiresAt ?? 0 };
   }
 
@@ -100,6 +108,87 @@ export async function resolvePresentationRef(ref: string): Promise<PresentationR
     proof: ProofVerification;
   };
   return { status: 'ok', presentation, proof };
+}
+
+// ─── Holder link management (#57) ────────────────────────────────────────────
+
+export interface SharedLinkSummary {
+  ref: string;
+  credentialCount: number;
+  createdAt: number;
+  expiresAt: number | null;
+  revokedAt: number | null;
+}
+
+/** Mirrors `holderActionMessage()` server-side — see `presentation-store.ts`. */
+function holderActionMessage(
+  action: 'list' | 'revoke',
+  holder: string,
+  timestamp: number,
+  ref?: string
+): string {
+  return action === 'revoke'
+    ? `ACTA:presentations:revoke:${ref}:${holder}:${timestamp}`
+    : `ACTA:presentations:list:${holder}:${timestamp}`;
+}
+
+async function signHolderAction(
+  connector: WalletConnector,
+  action: 'list' | 'revoke',
+  holder: string,
+  opts: SignTransactionOpts,
+  ref?: string
+): Promise<{ timestamp: number; signature: string }> {
+  if (!connector.signMessage) {
+    throw new PresentationLinkError('This wallet cannot sign messages required to manage links.');
+  }
+
+  const timestamp = Date.now();
+  const message = holderActionMessage(action, holder, timestamp, ref);
+  const { signedMessage } = await connector.signMessage(message, opts);
+  return { timestamp, signature: signedMessage };
+}
+
+/** `GET /api/presentations?holder=` — the holder's own non-expired share links. */
+export async function listPresentationLinks(
+  connector: WalletConnector,
+  holder: string,
+  opts: SignTransactionOpts
+): Promise<SharedLinkSummary[]> {
+  const { timestamp, signature } = await signHolderAction(connector, 'list', holder, opts);
+
+  const url = new URL(API_ROOT, window.location.origin);
+  url.searchParams.set('holder', holder);
+  url.searchParams.set('timestamp', String(timestamp));
+  url.searchParams.set('signature', signature);
+
+  const response = await fetch(url, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new PresentationLinkError('Could not load your shared links.');
+  }
+
+  const { links } = (await response.json()) as { links: SharedLinkSummary[] };
+  return links;
+}
+
+/** `DELETE /api/presentations/[ref]` — revokes a link the holder created. */
+export async function revokePresentationLink(
+  connector: WalletConnector,
+  ref: string,
+  holder: string,
+  opts: SignTransactionOpts
+): Promise<void> {
+  const { timestamp, signature } = await signHolderAction(connector, 'revoke', holder, opts, ref);
+
+  const response = await fetch(`${API_ROOT}/${encodeURIComponent(ref)}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ holder, timestamp, signature }),
+  });
+
+  if (!response.ok) {
+    throw new PresentationLinkError('The link could not be revoked.');
+  }
 }
 
 // ─── Holder proof ─────────────────────────────────────────────────────────────

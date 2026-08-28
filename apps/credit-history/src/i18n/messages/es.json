@@ -85,7 +85,30 @@
       "did": "DID del titular"
     },
     "noValue": "—",
-    "viewCredentials": "Ver todas las credenciales"
+    "viewCredentials": "Ver todas las credenciales",
+    "sharedLinks": {
+      "title": "Enlaces compartidos",
+      "description": "Enlaces que has creado para compartir tus credenciales con verificadores.",
+      "loading": "Cargando tus enlaces compartidos…",
+      "empty": {
+        "title": "Aún no hay enlaces compartidos",
+        "description": "Los enlaces que generes desde la página de Compartir aparecerán aquí para que puedas darles seguimiento y revocarlos."
+      },
+      "error": {
+        "title": "No se pudieron cargar tus enlaces compartidos",
+        "description": "Algo salió mal al leer tus enlaces compartidos. Inténtalo de nuevo.",
+        "retry": "Reintentar"
+      },
+      "created": "Creado",
+      "expires": "Expira",
+      "credentialCount": "{count, plural, one {# credencial} other {# credenciales}}",
+      "revoked": "Revocado",
+      "revokedAt": "Revocado el {date, date, medium}",
+      "revoke": "Revocar",
+      "revoking": "Revocando…",
+      "revokeConfirm": "¿Revocar este enlace? Quien lo tenga perderá el acceso de inmediato.",
+      "revokeError": "No se pudo revocar el enlace. Inténtalo de nuevo."
+    }
   },
   "credentials": {
     "title": "Mis Credenciales",
@@ -237,7 +260,8 @@
     "invalid": {
       "title": "Falló la verificación de la presentación",
       "description": "El token de verificación no pudo descifrarse, decodificarse o validarse. Solicita un nuevo enlace al titular de las credenciales.",
-      "expiredDescription": "Este enlace de verificación expiró el {date, date, medium} a las {date, time, short}. Solicita un nuevo enlace al titular de las credenciales."
+      "expiredDescription": "Este enlace de verificación expiró el {date, date, medium} a las {date, time, short}. Solicita un nuevo enlace al titular de las credenciales.",
+      "revokedDescription": "El titular de las credenciales revocó este enlace de verificación. Solicítale un nuevo enlace."
     },
     "attribution": {
       "title": "Presentado por el titular",

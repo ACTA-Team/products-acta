@@ -15,11 +15,13 @@ import {
 } from '@acta-products/acta/presentation';
 import { didStellar } from '@acta-products/acta/did';
 import {
+  createStoredPresentation,
+  holderActionMessage,
   isPresentationRef,
   resolveStoredPresentation,
   setPresentationStore,
 } from '@/lib/presentation-store';
-import { POST } from './route';
+import { GET, POST } from './route';
 
 const keypair = Keypair.random();
 const HOLDER = didStellar('testnet', keypair.publicKey());
@@ -218,6 +220,59 @@ describe('POST /api/presentations', () => {
       proof: 'not-an-object',
     });
 
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects (429) after the per-holder creation rate limit is exceeded', async () => {
+    const holder = didStellar('testnet', Keypair.random().publicKey());
+
+    let last: Response | undefined;
+    for (let i = 0; i < 21; i++) {
+      last = await post({ holder, credentialIds: ['cred-a'], expiresAt: null });
+    }
+
+    expect(last?.status).toBe(429);
+  });
+});
+
+describe('GET /api/presentations', () => {
+  function get(params: Record<string, string>): Promise<Response> {
+    const url = new URL('http://localhost/api/presentations');
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+    return GET(new Request(url));
+  }
+
+  it("lists the holder's own links with a valid signature", async () => {
+    const { ref } = await createStoredPresentation({
+      holder: HOLDER,
+      credentialIds: ['cred-a', 'cred-b'],
+      expiresAt: null,
+    });
+
+    const timestamp = Date.now();
+    const message = holderActionMessage('list', HOLDER, timestamp);
+    const hash = await sep0053MessageHash(message);
+    const signature = keypair.sign(Buffer.from(hash)).toString('base64');
+
+    const res = await get({ holder: HOLDER, timestamp: String(timestamp), signature });
+    expect(res.status).toBe(200);
+
+    const { links } = (await res.json()) as { links: { ref: string; credentialCount: number }[] };
+    expect(links).toContainEqual(expect.objectContaining({ ref, credentialCount: 2 }));
+  });
+
+  it('rejects (403) a signature that does not match the claimed holder', async () => {
+    const timestamp = Date.now();
+    const message = holderActionMessage('list', HOLDER, timestamp);
+    const hash = await sep0053MessageHash(message);
+    const signature = Keypair.random().sign(Buffer.from(hash)).toString('base64');
+
+    const res = await get({ holder: HOLDER, timestamp: String(timestamp), signature });
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects (400) a request missing required query params', async () => {
+    const res = await get({ holder: HOLDER });
     expect(res.status).toBe(400);
   });
 });

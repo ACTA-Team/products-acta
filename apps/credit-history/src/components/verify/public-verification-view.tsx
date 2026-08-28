@@ -34,7 +34,7 @@ import { resolvePresentationRef } from '@/lib/presentation-link';
 
 type LoadState =
   | { phase: 'loading' }
-  | { phase: 'invalid'; reason: 'malformed' | 'expired'; expirationDate?: Date }
+  | { phase: 'invalid'; reason: 'malformed' | 'expired' | 'revoked'; expirationDate?: Date }
   | {
       phase: 'ready';
       credentials: CreditCredential[];
@@ -153,6 +153,11 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
         return;
       }
 
+      if (resolution.status === 'revoked') {
+        if (!cancelled) setState({ phase: 'invalid', reason: 'revoked' });
+        return;
+      }
+
       const { presentation, proof } = resolution;
       const expiresAt = presentation.expires ? Date.parse(presentation.expires) : null;
       const expirationDate = expiresAt === null ? null : new Date(expiresAt);
@@ -237,7 +242,9 @@ export function PublicVerificationView({ token }: PublicVerificationViewProps) {
               description={
                 state.reason === 'expired' && state.expirationDate
                   ? t('invalid.expiredDescription', { date: state.expirationDate })
-                  : t('invalid.description')
+                  : state.reason === 'revoked'
+                    ? t('invalid.revokedDescription')
+                    : t('invalid.description')
               }
               action={
                 <div className="flex flex-col items-center gap-3">

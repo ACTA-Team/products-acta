@@ -19,6 +19,7 @@ import { AlertCircle, ArrowRight, Inbox, RefreshCw, Wallet } from 'lucide-react'
 import { useSession } from '@/session/session-provider';
 import { CREDIT_CATEGORIES } from '@/lib/credentials';
 import { computeProfileSummary } from '@/lib/profile-summary';
+import { SharedLinksSection } from '@/components/vault/shared-links-section';
 
 type LoadState =
   | { phase: 'loading' }
@@ -140,11 +141,12 @@ export function VaultView() {
               />
             )}
 
-            {state.phase === 'ready' && state.credentials.length > 0 && (
+            {state.phase === 'ready' && state.credentials.length > 0 && address && (
               <VaultDashboard
                 profile={state.profile}
                 credentials={state.credentials}
                 did={did ?? state.profile.holderDid}
+                address={address}
               />
             )}
           </>
@@ -158,9 +160,10 @@ interface VaultDashboardProps {
   profile: CreditProfileSummary;
   credentials: CreditCredential[];
   did: string;
+  address: string;
 }
 
-function VaultDashboard({ profile, credentials, did }: VaultDashboardProps) {
+function VaultDashboard({ profile, credentials, did, address }: VaultDashboardProps) {
   const t = useTranslations('vault');
   const tCredentials = useTranslations('credentials');
   const format = useFormatter();
@@ -238,6 +241,8 @@ function VaultDashboard({ profile, credentials, did }: VaultDashboardProps) {
           </dl>
         </CardContent>
       </Card>
+
+      <SharedLinksSection did={did} address={address} />
 
       <div className="flex justify-center">
         <Button asChild variant="outline" className="cursor-pointer">

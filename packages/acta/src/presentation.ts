@@ -296,12 +296,68 @@ export function isPresentationExpired(
 }
 
 /**
+ * A stored presentation plus the link-management metadata (#57) that must
+ * not live on `VerifiablePresentation` itself — that shape is the W3C
+ * presentation and stays clean for anything that consumes it downstream
+ * (the verifier, the digest, the proof).
+ */
+export interface StoredPresentationRecord {
+  ref: string;
+  presentation: VerifiablePresentation;
+  /** Duplicated from `presentation.holder` so drivers can index/query by it. */
+  holder: string;
+  /** Epoch milliseconds. Duplicated from `presentation.created`. */
+  createdAt: number;
+  /** Epoch milliseconds, or null for a link that never expires. */
+  expiresAt: number | null;
+  /** Epoch milliseconds the holder revoked the link, or null. */
+  revokedAt: number | null;
+}
+
+/**
  * Persistence seam for presentations. Implementations must treat `ref` as an
  * opaque, unguessable capability — never derive it from the presentation
  * contents.
  */
 export interface PresentationStore {
-  save(ref: string, presentation: VerifiablePresentation): Promise<void>;
-  get(ref: string): Promise<VerifiablePresentation | null>;
+  save(ref: string, record: StoredPresentationRecord): Promise<void>;
+  get(ref: string): Promise<StoredPresentationRecord | null>;
   delete(ref: string): Promise<void>;
+  /** Every non-deleted record for a holder — listing (#57) filters/enforces expiry itself. */
+  listByHolder(holder: string): Promise<StoredPresentationRecord[]>;
+}
+
+/**
+ * Verify a wallet signature over an arbitrary action message (link revocation,
+ * link listing) — the same SEP-0053 `signMessage` primitive and preimage as
+ * `verifyPresentationProof`, just over a caller-chosen message instead of a
+ * presentation digest. Used to prove control of the holder key for actions
+ * that are not "sharing a presentation" (see `/api/presentations` DELETE and
+ * the holder-scoped GET in #57).
+ */
+export interface HolderActionProof {
+  /** DID claiming to have produced the signature — must equal the resource's holder. */
+  holder: string;
+  /** base64 wallet signature over the SEP-0053 hash of `message`. */
+  signature: string;
+}
+
+export async function verifyHolderActionProof(
+  message: string,
+  proof: HolderActionProof
+): Promise<boolean> {
+  if (!proof.signature) return false;
+
+  const parsedHolder = parseDidStellar(proof.holder);
+  if (!parsedHolder) return false;
+
+  try {
+    const keypair = Keypair.fromPublicKey(parsedHolder.address);
+    const messageHash = await sep0053MessageHash(message);
+    const signature = Buffer.from(proof.signature, 'base64');
+    return signature.length > 0 && keypair.verify(Buffer.from(messageHash), signature);
+  } catch {
+    // A malformed G… address or non-base64 signature can never verify.
+    return false;
+  }
 }

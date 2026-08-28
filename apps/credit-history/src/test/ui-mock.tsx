@@ -36,9 +36,13 @@ function Stub({ children, title, description, label, action, value }: StubProps)
   );
 }
 
-function Button({ children, label }: StubProps) {
+function Button({
+  children,
+  label,
+  ...rest
+}: StubProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button type="button">
+    <button type="button" {...rest}>
       {label != null && <span>{label}</span>}
       {children}
     </button>
@@ -50,6 +54,7 @@ export function cn(...classes: unknown[]): string {
 }
 
 export {
+  Stub as Badge,
   Stub as Card,
   Stub as CardContent,
   Stub as CardFooter,

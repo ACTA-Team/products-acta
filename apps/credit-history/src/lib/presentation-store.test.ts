@@ -1,14 +1,56 @@
+/**
+ * @vitest-environment node
+ *
+ * The revoke/list flows sign with real ed25519 keys via `@stellar/stellar-sdk`,
+ * which needs real Node crypto — see the same note in
+ * `app/api/presentations/route.test.ts`.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { InvalidPresentationError } from '@acta-products/acta/presentation';
+import { Keypair } from '@stellar/stellar-sdk';
+import { didStellar } from '@acta-products/acta/did';
+import {
+  InvalidPresentationError,
+  sep0053MessageHash,
+  type HolderActionProof,
+} from '@acta-products/acta/presentation';
 import {
   createPresentationRef,
   createStoredPresentation,
+  holderActionMessage,
   isPresentationRef,
+  listStoredPresentations,
   MAX_CREATED_AT_DRIFT_MS,
   resolveStoredPresentation,
+  revokeStoredPresentation,
+  setPresentationStore,
 } from './presentation-store';
 
 const HOLDER = 'did:stellar:testnet:GHOLDER';
+
+const holderKeypair = Keypair.random();
+const REAL_HOLDER = didStellar('testnet', holderKeypair.publicKey());
+
+async function signAction(
+  action: 'list' | 'revoke',
+  timestamp: number,
+  ref?: string,
+  signer: Keypair = holderKeypair
+): Promise<HolderActionProof> {
+  const message = holderActionMessage(action, REAL_HOLDER, timestamp, ref);
+  const hash = await sep0053MessageHash(message);
+  return {
+    holder: REAL_HOLDER,
+    signature: signer.sign(Buffer.from(hash)).toString('base64'),
+  };
+}
+
+beforeEach(() => {
+  setPresentationStore(null);
+});
+
+afterEach(() => {
+  setPresentationStore(null);
+});
 
 afterEach(() => {
   vi.useRealTimers();
@@ -118,5 +160,174 @@ describe('resolveStoredPresentation', () => {
     vi.setSystemTime(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
     expect((await resolveStoredPresentation(ref)).status).toBe('ok');
+  });
+
+  it('survives a simulated process restart against the same backing store', async () => {
+    const { ref } = await createStoredPresentation({
+      holder: HOLDER,
+      credentialIds: ['cred-income'],
+      expiresAt: null,
+    });
+
+    // Drops the cached driver instance — the next call to getPresentationStore()
+    // re-instantiates the driver from scratch, the way a fresh lambda cold
+    // start or a redeploy would, without wiping the backing data itself.
+    setPresentationStore(null);
+
+    expect((await resolveStoredPresentation(ref)).status).toBe('ok');
+  });
+});
+
+describe('revokeStoredPresentation', () => {
+  it("revokes a link with the holder's proof and stops it resolving", async () => {
+    const { ref } = await createStoredPresentation({
+      holder: REAL_HOLDER,
+      credentialIds: ['cred-income'],
+      expiresAt: null,
+    });
+
+    const timestamp = Date.now();
+    const proof = await signAction('revoke', timestamp, ref);
+
+    const result = await revokeStoredPresentation(ref, REAL_HOLDER, timestamp, proof);
+    expect(result).toEqual({ ok: true });
+
+    const resolution = await resolveStoredPresentation(ref);
+    expect(resolution.status).toBe('revoked');
+  });
+
+  it('is idempotent when revoking an already-revoked link', async () => {
+    const { ref } = await createStoredPresentation({
+      holder: REAL_HOLDER,
+      credentialIds: ['cred-income'],
+      expiresAt: null,
+    });
+
+    const first = Date.now();
+    await revokeStoredPresentation(ref, REAL_HOLDER, first, await signAction('revoke', first, ref));
+
+    const second = first + 1000;
+    const result = await revokeStoredPresentation(
+      ref,
+      REAL_HOLDER,
+      second,
+      await signAction('revoke', second, ref)
+    );
+    expect(result).toEqual({ ok: true });
+  });
+
+  it('rejects (invalid) a signature from a different keypair', async () => {
+    const { ref } = await createStoredPresentation({
+      holder: REAL_HOLDER,
+      credentialIds: ['cred-income'],
+      expiresAt: null,
+    });
+
+    const timestamp = Date.now();
+    const proof = await signAction('revoke', timestamp, ref, Keypair.random());
+
+    const result = await revokeStoredPresentation(ref, REAL_HOLDER, timestamp, proof);
+    expect(result).toEqual({ ok: false, reason: 'invalid' });
+    expect((await resolveStoredPresentation(ref)).status).toBe('ok');
+  });
+
+  it('rejects (stale) a replayed, old timestamp', async () => {
+    const { ref } = await createStoredPresentation({
+      holder: REAL_HOLDER,
+      credentialIds: ['cred-income'],
+      expiresAt: null,
+    });
+
+    const timestamp = Date.now() - MAX_CREATED_AT_DRIFT_MS - 1;
+    const proof = await signAction('revoke', timestamp, ref);
+
+    const result = await revokeStoredPresentation(ref, REAL_HOLDER, timestamp, proof);
+    expect(result).toEqual({ ok: false, reason: 'stale' });
+  });
+
+  it('reports not_found for an unknown ref, without leaking whether it exists to the wrong holder', async () => {
+    const otherHolderKeypair = Keypair.random();
+    const otherHolder = didStellar('testnet', otherHolderKeypair.publicKey());
+
+    const { ref } = await createStoredPresentation({
+      holder: REAL_HOLDER,
+      credentialIds: ['cred-income'],
+      expiresAt: null,
+    });
+
+    const timestamp = Date.now();
+    const message = holderActionMessage('revoke', otherHolder, timestamp, ref);
+    const hash = await sep0053MessageHash(message);
+    const proof: HolderActionProof = {
+      holder: otherHolder,
+      signature: otherHolderKeypair.sign(Buffer.from(hash)).toString('base64'),
+    };
+
+    const result = await revokeStoredPresentation(ref, otherHolder, timestamp, proof);
+    expect(result).toEqual({ ok: false, reason: 'not_found' });
+    expect((await resolveStoredPresentation(ref)).status).toBe('ok');
+  });
+
+  it('reports not_found for a ref that never existed', async () => {
+    const timestamp = Date.now();
+    const ref = createPresentationRef();
+    const proof = await signAction('revoke', timestamp, ref);
+
+    const result = await revokeStoredPresentation(ref, REAL_HOLDER, timestamp, proof);
+    expect(result).toEqual({ ok: false, reason: 'not_found' });
+  });
+});
+
+describe('listStoredPresentations', () => {
+  it("lists the holder's own links, including revoked ones, excluding expired ones", async () => {
+    const { ref: active } = await createStoredPresentation({
+      holder: REAL_HOLDER,
+      credentialIds: ['cred-a'],
+      expiresAt: null,
+    });
+    const { ref: revoked } = await createStoredPresentation({
+      holder: REAL_HOLDER,
+      credentialIds: ['cred-b'],
+      expiresAt: null,
+    });
+    const { ref: expiring } = await createStoredPresentation({
+      holder: REAL_HOLDER,
+      credentialIds: ['cred-c'],
+      expiresAt: Date.now() + 1000,
+    });
+
+    const revokeTimestamp = Date.now();
+    await revokeStoredPresentation(
+      revoked,
+      REAL_HOLDER,
+      revokeTimestamp,
+      await signAction('revoke', revokeTimestamp, revoked)
+    );
+
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + 2000);
+
+    const listTimestamp = Date.now();
+    const result = await listStoredPresentations(
+      REAL_HOLDER,
+      listTimestamp,
+      await signAction('list', listTimestamp)
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const refs = result.links.map((link) => link.ref);
+    expect(refs).toContain(active);
+    expect(refs).toContain(revoked);
+    expect(refs).not.toContain(expiring);
+    expect(result.links.find((l) => l.ref === revoked)?.revokedAt).not.toBeNull();
+  });
+
+  it('rejects (invalid) a request signed by a different key than the claimed holder', async () => {
+    const timestamp = Date.now();
+    const proof = await signAction('list', timestamp, undefined, Keypair.random());
+
+    const result = await listStoredPresentations(REAL_HOLDER, timestamp, proof);
+    expect(result).toEqual({ ok: false, reason: 'invalid' });
   });
 });
