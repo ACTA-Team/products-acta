@@ -2,11 +2,11 @@
   "name": "@acta-products/credit-history",
   "version": "0.0.0",
   "private": true,
-  "description": "Portable credit history / financial inclusion product built on ACTA. Skeleton only — no product logic yet.",
+  "description": "Portable credit history / financial inclusion product built on ACTA. Skeleton only \u2014 no product logic yet.",
   "scripts": {
-    "dev": "next dev -p 3001",
-    "build": "next build",
-    "start": "next start -p 3001",
+    "dev": "node init && next dev -p 3001",
+    "build": "node init && next build",
+    "start": "node init && next start -p 3001",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
